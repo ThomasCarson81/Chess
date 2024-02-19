@@ -28,6 +28,9 @@ sysinfo.txt
 *.pidb
 .DS_Store
 
+# Visual Studio cache directory
+.vs/
+
 ###
 # OS generated
 ###
