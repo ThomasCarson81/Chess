@@ -47,29 +47,33 @@ public class BoardManager : MonoBehaviour
         // put them on the screen and stuff ig
     }
 
-    void ModifyPieceComponent(Piece piece, PlayerColour colour, PieceType type, int x, int y)
+    void ModifyPieceComponent(GameObject piece, PlayerColour colour, PieceType type, int x, int y)
     {
         int index;
         if (colour == PlayerColour.WHITE)
         {
             index = 0;
         }
-        else
+        else if (colour == PlayerColour.BLACK)
         {
             index = 1;
         }
-        piece.sprite = type switch
+        else
+        {
+             index = 2;
+        }
+        piece.GetComponent<SpriteRenderer>().sprite = type switch
         {
             PieceType.PAWN => pawnSprites[index],
             PieceType.ROOK => rookSprites[index],
-            PieceType.KING => knightSprites[index],
+            PieceType.KING => kingSprites[index],
             PieceType.BISHOP => bishopSprites[index],
             PieceType.QUEEN => queenSprites[index],
             PieceType.KNIGHT => knightSprites[index],
             _ => pawnSprites[index],
         };
-        piece.gameObject.transform.position = new Vector3(x-4.5f, y-4.5f, 0);
-
+        piece.GetComponent<Piece>().player = colour;
+        piece.transform.position = new Vector3(x-4.5f, y-4.5f, 0);
     }
 
     void GetPositionFromFEN(string fen, ref List<GameObject> result)
@@ -77,13 +81,13 @@ public class BoardManager : MonoBehaviour
         string[] splitFEN = fen.Split("/");
         splitFEN[^1] = splitFEN[^1].Split(" ")[0];
         int x;
-        int y = 0;
+        int y = 9;
         char pieceChar;
         PlayerColour colour;
         PieceType pieceType;
         foreach (string rank in splitFEN)
         {
-            y++;
+            y--;
             x = 0;
             foreach (char c in rank)
             {
@@ -133,7 +137,7 @@ public class BoardManager : MonoBehaviour
                 if (obj != null)
                 {
                     result.Add(obj);
-                    ModifyPieceComponent(obj.GetComponent<Piece>(), colour, pieceType, x, y);
+                    ModifyPieceComponent(obj, colour, pieceType, x, y);
                 }
             }
             

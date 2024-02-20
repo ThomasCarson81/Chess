@@ -6,7 +6,6 @@ using UnityEngine;
 public abstract class Piece : MonoBehaviour
 {
     [NonSerialized] public PieceType type;
-    [NonSerialized] public Sprite sprite;
     [NonSerialized] public int material;
     [SerializeField] bool canMove;
     public PlayerColour player;
@@ -15,7 +14,6 @@ public abstract class Piece : MonoBehaviour
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
-        sr.sprite = sprite;
     }
 }
 
