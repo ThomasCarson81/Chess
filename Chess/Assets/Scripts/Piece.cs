@@ -2,57 +2,66 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
     #region PIECE_CODES
-    /* Bit pattern for ushort piece format
-     * 0000000     0        01     000100 
-     * ^^^^^^^ |   ^    |   ^^   | ^^^^^^
-     *  unused | moved  |  White | Bishop
+    /* Bit pattern for byte piece format
+     *   00       1       01      100 
+     *   ^^   |   ^   |   ^^   |  ^^^
+     * unused | moved |  White | Bishop
      */
 
-    public const ushort None = 0;
-    public const ushort King = 1;
-    public const ushort Pawn = 2;
-    public const ushort Knight = 3;
-    public const ushort Bishop = 4;
-    public const ushort Rook = 5;
-    public const ushort Queen = 6;
+    public const byte None = 0;
+    public const byte King = 1;
+    public const byte Pawn = 2;
+    public const byte Knight = 3;
+    public const byte Bishop = 4;
+    public const byte Rook = 5;
+    public const byte Queen = 6;
 
-    public const ushort White = 8;
-    public const ushort Black = 16;
+    public const byte White = 8;
+    public const byte Black = 16;
 
-    public const ushort HasMoved = 32;
+    public const byte HasMoved = 32;
     #endregion
 
+    public byte pieceCode;
+    SpriteRenderer sr;
 
-    
-    public ushort pieceCode;
-
-
-    public bool IsColour(ushort colour)
+    private void Start()
     {
-        /* Explanation
-         * 0000000101000100 (a white bishop which has moved) Bitwise AND'd with
-         * 0000000001000000 (White code) =
-         * 0000000001000000
-         * this is > 0, so it is true
-         */
-        return (pieceCode & colour) > 0;
+        sr = GetComponent<SpriteRenderer>();
+        sr.sprite = (Utility.TypeCode(pieceCode) + Utility.ColourCode(pieceCode)) switch
+        {
+            (King   | White) => BoardManager.Instance.kingSprites   [0],
+            (King   | Black) => BoardManager.Instance.kingSprites   [1],
+            (Pawn   | White) => BoardManager.Instance.pawnSprites   [0],
+            (Pawn   | Black) => BoardManager.Instance.pawnSprites   [1],
+            (Knight | White) => BoardManager.Instance.knightSprites [0],
+            (Knight | Black) => BoardManager.Instance.knightSprites [1],
+            (Bishop | White) => BoardManager.Instance.bishopSprites [0],
+            (Bishop | Black) => BoardManager.Instance.bishopSprites [1],
+            (Rook   | White) => BoardManager.Instance.rookSprites   [0],
+            (Rook   | Black) => BoardManager.Instance.rookSprites   [1],
+            (Queen  | White) => BoardManager.Instance.queenSprites  [0],
+            (Queen  | Black) => BoardManager.Instance.queenSprites  [1],
+            _ => BoardManager.Instance.pawnSprites[0] // in case of an error, show a white pawn
+        };
     }
 
-    public bool IsPiece(ushort pieceCode)
+    public bool IsColour(byte colour)
     {
-        /* Explanation
-         * 0000000 0 10 000011 (a white knight which hasn't moved) Bitwise AND'd with
-         * 0000000 0 00 000011 (Knight code) =
-         * 0000000 0 00 000011
-         * this is > 0, so it is true
-         */
-        return (this.pieceCode & pieceCode) > 0;
+        return Utility.IsColour(pieceCode, colour);
+    }
+    public bool HasPieceMoved()
+    {
+        return Utility.HasMoved(pieceCode);
+    }
+    public bool IsPiece(byte pieceCode)
+    {
+        return Utility.IsPiece(this.pieceCode, pieceCode);
     }
 
 }

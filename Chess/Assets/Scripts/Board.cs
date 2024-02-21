@@ -1,52 +1,63 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public sealed class Board
 {
     public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    public static ushort[] square;
+    public static byte[] square;
+    public static List<GameObject> pieceObjs = new();
     public Board()
     {
-        square = new ushort[64];
+        string boardStr = string.Empty;
+        square = new byte[64];
+        for (int i = 0; i < square.Length; i++)
+        {
+            square[i] = 0;
+        }
         square = PositionFromFEN(startFEN);
-    }
-    public static int NotationToBoardIndex(string sqr)
-    {
-        // sqr must be length 2, with the 1st being a char and the 2nd an int 
-        if (sqr.Length != 2 || !char.IsLetter(sqr[0]) || !char.IsDigit(sqr[1]))
+        foreach (byte p in square)
         {
-            return -1;
+            boardStr += p + " ";
         }
-        int rank = sqr[0] - 'a'; // a = 0, b = 1, c = 2, etc
-        int file = sqr[1] - '0' - 1; // converts from char to int, but subtracts 1 as arrays are 0-based indexed
-        return file + 8 * rank;
-    }
-    public static string BoardIndexToNotation(int boardIndex)
-    {
-        string notation = "";
-        if (boardIndex < 0 ||  boardIndex > 63)
+        Debug.Log(boardStr);
+        GameObject obj;
+        for (int i = 0; i < square.Length; i++)
         {
-            return notation;
+            obj = InstantiatePiece(square[i]);
+            if (obj != null) pieceObjs.Add(obj);
         }
-        int rankInt = boardIndex % 8;
-        char rank = (char)(rankInt + 'a');
-        char file = (char)((boardIndex - rankInt) / 8 + 1 + '0');
-        notation = $"{rank}{file}";
-        return notation;
     }
-    ushort[] PositionFromFEN(string fen)
+    public static GameObject InstantiatePiece(int boardIndex)
     {
-        ushort[] result = new ushort[64];
+        if (Utility.IsNonePiece(square[boardIndex])) return null;
+        Vector3 pos = (Vector3)Utility.WorldPosFromBoardIndex(boardIndex);
+        if (BoardManager.Instance == null)
+        {
+            Debug.LogError("BoardManager.Instance = null");
+        }
+        if (BoardManager.Instance.piecePrefab == null)
+        {
+            Debug.LogError("BoardManager.Instance.piecePrefab = null");
+        }
+        GameObject piece = Object.Instantiate(BoardManager.Instance.piecePrefab, pos, Quaternion.identity);
+        Piece pieceScript = piece.AddComponent<Piece>();
+        pieceScript.pieceCode = square[boardIndex];
+        return piece;
+    }
+    byte[] PositionFromFEN(string fen)
+    {
+        string resStr = string.Empty;
+        byte[] result = new byte[64];
         string[] splitFEN = fen.Split("/");
         splitFEN[^1] = splitFEN[^1].Split(" ")[0];
         int index = 63; // start at the top of the board
-        ushort colour;
-        ushort pieceType;
-        int skips = 0;
-        foreach (string rank in splitFEN)
+        byte colour;
+        byte pieceType;
+        int skips = -1;
+        foreach (string rank in splitFEN.Reverse())
         {
             foreach (char c in rank.Reverse()) // indices decrease right to left, so flip the rank
             {
@@ -60,8 +71,9 @@ public sealed class Board
                 if (char.IsDigit(c))
                 {
                     skips = c - '0'; // converts char to int
+                    resStr += skips.ToString() + "S ";
                 }
-                colour = (char.IsUpper(c)) ? Piece.White : Piece.Black; // UPPER = White, Lower = black
+                colour = char.IsUpper(c) ? Piece.White : Piece.Black; // UPPER = White, Lower = black
                 pieceType = char.ToLower(c) switch
                 {
                     'p' => Piece.Pawn,
@@ -73,10 +85,13 @@ public sealed class Board
                     _ => Piece.None // illegal character in FEN, just add no piece
                 };
                 // place a piece with the specified colour at this position
-                result[index] = (ushort)(pieceType + colour); 
+                result[index] = (byte)(pieceType + colour); 
+                resStr += result[index] + " ";
                 index--;
             }
         }
+        Debug.Log($"FEN:\n{resStr}");
+        Debug.Log($"len(FEN)={result.Length}");
         return result;
     }
 }
