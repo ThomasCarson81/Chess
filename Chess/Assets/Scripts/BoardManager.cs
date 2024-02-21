@@ -73,9 +73,21 @@ public class BoardManager : MonoBehaviour
             _ => pawnSprites[index],
         };
         piece.GetComponent<Piece>().player = colour;
-        piece.transform.position = new Vector3(x-4.5f, y-4.5f, 0);
+        piece.transform.position = new(x-4.5f, y-4.5f, 0);
     }
 
+    GameObject PieceAt(int x, int y)
+    {
+        Vector3 pos = new(x - 4.5f, y - 4.5f, 0);
+        foreach (GameObject piece in pieces)
+        {
+            if (piece.transform.position == pos)
+            {
+                return piece;
+            }
+        }
+        return null;
+    }
     void GetPositionFromFEN(string fen, ref List<GameObject> result)
     {
         string[] splitFEN = fen.Split("/");
