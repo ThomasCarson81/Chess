@@ -1,16 +1,17 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
     #region PIECE_CODES
     /* Bit pattern for byte piece format
-     *   00       1       01      100 
-     *   ^^   |   ^   |   ^^   |  ^^^
-     * unused | moved |  White | Bishop
+     *   0          0           1       01      100 
+     *   ^    |     ^       |   ^   |   ^^   |  ^^^
+     * unused |  pickedUp   | moved |  White | Bishop
      */
 
     public const byte None = 0;
@@ -20,20 +21,32 @@ public class Piece : MonoBehaviour
     public const byte Bishop = 4;
     public const byte Rook = 5;
     public const byte Queen = 6;
+    public const byte EnPassant = 7;
 
     public const byte White = 8;
     public const byte Black = 16;
 
     public const byte HasMoved = 32;
+    public const byte PickedUp = 64;
     #endregion
 
     public byte pieceCode;
     SpriteRenderer sr;
 
+
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
         sr.sprite = GetSpriteFromPieceCode(Utility.RemoveMetadata(pieceCode));
+    }
+    private void Update()
+    {
+        if (IsPickedUp())
+        {
+            Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            pos.z = -1;
+            transform.position = pos;
+        }
     }
     Sprite GetSpriteFromPieceCode(byte pieceCode)
     {
@@ -66,4 +79,30 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPiece(this.pieceCode, pieceCode);
     }
+    public bool IsPickedUp()
+    {
+        return Utility.IsPickedUp(pieceCode);
+    }
+    private void OnMouseDown()
+    {
+        if (!IsPickedUp())
+        {
+            pieceCode |= PickedUp;
+        }
+        else
+        {
+            pieceCode ^= (byte)(pieceCode & PickedUp);
+            float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
+            float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
+            string newPos = Utility.WorldPosToNotation(x, y);
+            transform.position = new Vector3(x, y, -1);
+        }
+    }
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.red;
+    //    Vector3 mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    //    Vector3 sPos = new(Mathf.Round(mPos.x + 0.5f) - 0.5f, Mathf.Round(mPos.y + 0.5f) - 0.5f, 0);
+    //    Gizmos.DrawSphere(sPos, 0.1f);
+    //}
 }

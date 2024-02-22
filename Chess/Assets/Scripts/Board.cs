@@ -7,22 +7,11 @@ using UnityEngine;
 public sealed class Board
 {
     public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    public static byte[] square;
+    public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public Board()
     {
-        string boardStr = string.Empty;
-        square = new byte[64];
-        for (int i = 0; i < square.Length; i++)
-        {
-            square[i] = 0;
-        }
         square = PositionFromFEN(startFEN);
-        foreach (byte p in square)
-        {
-            boardStr += p.ToString() + " ";
-        }
-        Debug.Log(boardStr);
         GameObject obj;
         for (int i = 0; i < square.Length; i++)
         {
@@ -33,7 +22,7 @@ public sealed class Board
     public static GameObject InstantiatePiece(int boardIndex)
     {
         if (Utility.IsNonePiece(square[boardIndex])) return null;
-        Vector3 pos = (Vector3)Utility.WorldPosFromBoardIndex(boardIndex);
+        Vector3 pos = Utility.BoardIndexToWorldPos(boardIndex);
         if (BoardManager.Instance == null)
         {
             Debug.LogError("BoardManager.Instance = null");
