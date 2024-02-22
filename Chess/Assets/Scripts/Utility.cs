@@ -4,11 +4,21 @@ using UnityEngine;
 
 public static class Utility
 {
+    public static byte RemoveMetadata(byte pieceCode)
+    {
+        /* Explanation
+         * 00101100 (a white bishop which has moved) Bitwise AND'd with
+         * 00011111 (colour section = 31) =
+         * 00001111
+         * end the metadata is gone
+         */
+        return (byte)(pieceCode & 31);
+    }
     public static byte ColourCode(byte pieceCode)
     {
         /* Explanation
          * 00101100 (a white bishop which has moved) Bitwise AND'd with
-         * 00011000 (colour section) =
+         * 00011000 (colour section = 24) =
          * 00001000
          * so it's white
          */
@@ -60,11 +70,36 @@ public static class Utility
     }
     public static Vector3? WorldPosFromBoardIndex(int boardIndex)
     {
-        if (boardIndex < 0 || boardIndex > 63) return null;
-        int rank = boardIndex % 8 - 1;
-        int file = (boardIndex - rank + 1) / 8;
-        float x = file - 3.5f;
-        float y = rank - 3.5f;
+        //if (boardIndex < 0 || boardIndex > 63) return null;
+        //int rank = boardIndex % 8;
+        //int file = (boardIndex - rank + 1) / 8 + 1;
+        //float x = file - 3.5f;
+        //float y = rank - 3.5f;
+        string notation = BoardIndexToNotation(boardIndex);
+        float x = notation[0] switch
+        {
+            'a' => -3.5f,
+            'b' => -2.5f,
+            'c' => -1.5f,
+            'd' => -0.5f,
+            'e' =>  0.5f,
+            'f' =>  1.5f,
+            'g' =>  2.5f,
+            'h' =>  3.5f,
+             _  =>  0.0f
+        };
+        float y = notation[1] switch
+        {
+            '1' => -3.5f,
+            '2' => -2.5f,
+            '3' => -1.5f,
+            '4' => -0.5f,
+            '5' => 0.5f,
+            '6' => 1.5f,
+            '7' => 2.5f,
+            '8' => 3.5f,
+             _  => 0.0f
+        };
         return new(x, y, 0);
     }
     public static int NotationToBoardIndex(string sqr)

@@ -15,6 +15,7 @@ public class BoardManager : MonoBehaviour
     public Sprite[] bishopSprites;
     public Sprite[] queenSprites;
     public Sprite[] kingSprites;
+    public Sprite errorSprite;
 
     void Awake()
     {
@@ -33,18 +34,4 @@ public class BoardManager : MonoBehaviour
         }
         board = new();
     }
-
-
-    //GameObject PieceAt(int x, int y)
-    //{
-    //    Vector3 pos = new(x - 4.5f, y - 4.5f, 0);
-    //    foreach (GameObject piece in pieces)
-    //    {
-    //        if (piece.transform.position == pos)
-    //        {
-    //            return piece;
-    //        }
-    //    }
-    //    return null;
-    //}
 }

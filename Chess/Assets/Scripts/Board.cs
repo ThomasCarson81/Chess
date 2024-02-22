@@ -20,13 +20,13 @@ public sealed class Board
         square = PositionFromFEN(startFEN);
         foreach (byte p in square)
         {
-            boardStr += p + " ";
+            boardStr += p.ToString() + " ";
         }
         Debug.Log(boardStr);
         GameObject obj;
         for (int i = 0; i < square.Length; i++)
         {
-            obj = InstantiatePiece(square[i]);
+            obj = InstantiatePiece(i);
             if (obj != null) pieceObjs.Add(obj);
         }
     }
@@ -43,8 +43,8 @@ public sealed class Board
             Debug.LogError("BoardManager.Instance.piecePrefab = null");
         }
         GameObject piece = Object.Instantiate(BoardManager.Instance.piecePrefab, pos, Quaternion.identity);
-        Piece pieceScript = piece.AddComponent<Piece>();
-        pieceScript.pieceCode = square[boardIndex];
+        Piece script = piece.GetComponent<Piece>();
+        script.pieceCode = square[boardIndex];
         return piece;
     }
     byte[] PositionFromFEN(string fen)
@@ -56,22 +56,29 @@ public sealed class Board
         int index = 63; // start at the top of the board
         byte colour;
         byte pieceType;
-        int skips = -1;
-        foreach (string rank in splitFEN.Reverse())
+        int skips;
+        foreach (string rank in splitFEN)
         {
             foreach (char c in rank.Reverse()) // indices decrease right to left, so flip the rank
             {
-                if (skips >= 0)
-                {
-                    result[index] = Piece.None; // place no piece at this position
-                    index--;
-                    skips--;
-                    continue;
-                }
+                //while (skips >= 0)
+                //{
+                //    result[index] = Piece.None; // place no piece at this position
+                //    index--;
+                //    skips--;
+                //}
                 if (char.IsDigit(c))
                 {
+                    //Debug.Log($"Skipping {c - '0'} times");
                     skips = c - '0'; // converts char to int
-                    resStr += skips.ToString() + "S ";
+                    while (skips > 0)
+                    {
+                        result[index] = Piece.None;
+                        skips--;
+                        index--;
+                    }
+                    resStr += "skip ";
+                    continue;
                 }
                 colour = char.IsUpper(c) ? Piece.White : Piece.Black; // UPPER = White, Lower = black
                 pieceType = char.ToLower(c) switch
@@ -84,14 +91,24 @@ public sealed class Board
                     'q' => Piece.Queen,
                     _ => Piece.None // illegal character in FEN, just add no piece
                 };
+                string s = char.ToLower(c) switch
+                {
+                    'p' => "Pawn",
+                    'k' => "King",
+                    'n' => "Knight",
+                    'b' => "Bishop",
+                    'r' => "Rook",
+                    'q' => "Queen",
+                    _ => "Err: " + c.ToString() // illegal character in FEN, just add no piece
+                };
                 // place a piece with the specified colour at this position
-                result[index] = (byte)(pieceType + colour); 
-                resStr += result[index] + " ";
+                result[index] = (byte)(pieceType | colour); 
+                resStr += s + " ";
                 index--;
             }
         }
-        Debug.Log($"FEN:\n{resStr}");
-        Debug.Log($"len(FEN)={result.Length}");
+        //Debug.Log($"FEN:\n{resStr}");
+        //Debug.Log($"len(FEN)={result.Length}");
         return result;
     }
 }

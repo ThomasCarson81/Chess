@@ -33,24 +33,27 @@ public class Piece : MonoBehaviour
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
-        sr.sprite = (Utility.TypeCode(pieceCode) + Utility.ColourCode(pieceCode)) switch
+        sr.sprite = GetSpriteFromPieceCode(Utility.RemoveMetadata(pieceCode));
+    }
+    Sprite GetSpriteFromPieceCode(byte pieceCode)
+    {
+        return pieceCode switch
         {
-            (King   | White) => BoardManager.Instance.kingSprites   [0],
-            (King   | Black) => BoardManager.Instance.kingSprites   [1],
-            (Pawn   | White) => BoardManager.Instance.pawnSprites   [0],
-            (Pawn   | Black) => BoardManager.Instance.pawnSprites   [1],
-            (Knight | White) => BoardManager.Instance.knightSprites [0],
-            (Knight | Black) => BoardManager.Instance.knightSprites [1],
-            (Bishop | White) => BoardManager.Instance.bishopSprites [0],
-            (Bishop | Black) => BoardManager.Instance.bishopSprites [1],
-            (Rook   | White) => BoardManager.Instance.rookSprites   [0],
-            (Rook   | Black) => BoardManager.Instance.rookSprites   [1],
-            (Queen  | White) => BoardManager.Instance.queenSprites  [0],
-            (Queen  | Black) => BoardManager.Instance.queenSprites  [1],
-            _ => BoardManager.Instance.pawnSprites[0] // in case of an error, show a white pawn
+            9 => BoardManager.Instance.kingSprites[0],
+            17 => BoardManager.Instance.kingSprites[1],
+            10 => BoardManager.Instance.pawnSprites[0],
+            18 => BoardManager.Instance.pawnSprites[1],
+            11 => BoardManager.Instance.knightSprites[0],
+            19 => BoardManager.Instance.knightSprites[1],
+            12 => BoardManager.Instance.bishopSprites[0],
+            20 => BoardManager.Instance.bishopSprites[1],
+            13 => BoardManager.Instance.rookSprites[0],
+            21 => BoardManager.Instance.rookSprites[1],
+            14 => BoardManager.Instance.queenSprites[0],
+            22 => BoardManager.Instance.queenSprites[1],
+            _ => BoardManager.Instance.errorSprite // in case of an error, show a red dot
         };
     }
-
     public bool IsColour(byte colour)
     {
         return Utility.IsColour(pieceCode, colour);
@@ -63,5 +66,4 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPiece(this.pieceCode, pieceCode);
     }
-
 }
