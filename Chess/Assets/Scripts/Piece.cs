@@ -93,8 +93,13 @@ public class Piece : MonoBehaviour
             pieceCode ^= (byte)(pieceCode & PickedUp);
             float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
             float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
-            Notation newPos = Utility.WorldPosToNotation(x, y);
-            transform.position = new Vector3(x, y, -1);
+            //Notation newPos = Utility.WorldPosToNotation(x, y);
+            if (Utility.PieceAtWorldPos(x, y) == None)
+            {
+                // Move(x, y);
+                
+            }
+            transform.position = new Vector3(x, y, -2);
         }
     }
     //private void OnDrawGizmos()
