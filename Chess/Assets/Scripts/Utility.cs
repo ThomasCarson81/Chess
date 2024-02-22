@@ -85,12 +85,12 @@ public static class Utility
     /// </summary>
     public static Vector3 BoardIndexToWorldPos(int boardIndex)
     {
-        string notation = BoardIndexToNotation(boardIndex);
+        Notation notation = BoardIndexToNotation(boardIndex);
         return NotationToWorldPos(notation);
     }
-    public static Vector3 NotationToWorldPos(string notation)
+    public static Vector3 NotationToWorldPos(Notation notation)
     {
-        float x = notation[0] switch
+        float x = notation.file switch
         {
             'a' => -3.5f,
             'b' => -2.5f,
@@ -102,7 +102,7 @@ public static class Utility
             'h' => 3.5f,
             _ => 0.0f
         };
-        float y = notation[1] switch
+        float y = notation.rank switch
         {
             '1' => -3.5f,
             '2' => -2.5f,
@@ -116,7 +116,7 @@ public static class Utility
         };
         return new(x, y, 0);
     }
-    public static string WorldPosToNotation(float x, float y)
+    public static Notation WorldPosToNotation(float x, float y)
     {
         char file = x switch
         {
@@ -142,26 +142,21 @@ public static class Utility
             3.5f => '8',
             _ => '1'
         };
-        return $"{file}{rank}";
+        return new Notation(file, rank);
     }
-    public static int NotationToBoardIndex(string sqr)
+    public static int NotationToBoardIndex(Notation notation)
     {
-        // sqr must be length 2, with the 1st being a char and the 2nd an int 
-        if (sqr.Length != 2 || !char.IsLetter(sqr[0]) || !char.IsDigit(sqr[1]))
-        {
-            return -1;
-        }
-        int rank = sqr[0] - 'a'; // a = 0, b = 1, c = 2, etc
-        int file = sqr[1] - '0' - 1; // converts from char to int, but subtracts 1 as arrays are 0-based indexed
+        int rank = notation.file - 'a'; // a = 0, b = 1, c = 2, etc
+        int file = notation.rank - '0' - 1; // converts from char to int, but subtracts 1 as arrays are 0-based indexed
         return file + 8 * rank;
     }
-    public static string BoardIndexToNotation(int boardIndex)
+    public static Notation BoardIndexToNotation(int boardIndex)
     {
-        if (boardIndex < 0 || boardIndex > 63) return "";
+        if (boardIndex < 0 || boardIndex > 63) return new Notation(); // defaults to a1
         int rankInt = boardIndex % 8;
         char rank = (char)(rankInt + 'a');
         char file = (char)((boardIndex - rankInt) / 8 + 1 + '0');
-        return $"{rank}{file}";
+        return new Notation(file, rank);
     }
     public static byte PieceAtWorldPos(float x, float y)
     {

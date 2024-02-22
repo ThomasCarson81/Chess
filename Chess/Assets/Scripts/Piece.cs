@@ -33,7 +33,6 @@ public class Piece : MonoBehaviour
     public byte pieceCode;
     SpriteRenderer sr;
 
-
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -94,7 +93,7 @@ public class Piece : MonoBehaviour
             pieceCode ^= (byte)(pieceCode & PickedUp);
             float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
             float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
-            string newPos = Utility.WorldPosToNotation(x, y);
+            Notation newPos = Utility.WorldPosToNotation(x, y);
             transform.position = new Vector3(x, y, -1);
         }
     }
@@ -105,4 +104,15 @@ public class Piece : MonoBehaviour
     //    Vector3 sPos = new(Mathf.Round(mPos.x + 0.5f) - 0.5f, Mathf.Round(mPos.y + 0.5f) - 0.5f, 0);
     //    Gizmos.DrawSphere(sPos, 0.1f);
     //}
+}
+public struct Notation
+{
+    public char file;
+    public char rank;
+
+    public Notation(char file = 'a', char rank= '1')
+    {
+        this.file = file;
+        this.rank = rank;
+    }
 }
