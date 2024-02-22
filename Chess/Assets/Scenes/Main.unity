@@ -312,6 +312,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7126168f116cbf74ab7092b7fcc2033b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  piecePrefab: {fileID: 4415624333441761004, guid: 2cdbd2113c2f94f4aa85b3db78864e54, type: 3}
   pawnSprites:
   - {fileID: 21300000, guid: b35d820abfc10194687a5363509906cd, type: 3}
   - {fileID: 21300000, guid: c311456a7e41abf40850ee98277897d7, type: 3}
@@ -330,12 +331,7 @@ MonoBehaviour:
   kingSprites:
   - {fileID: 21300000, guid: 6448c39e7b9aa574793307337d32bfed, type: 3}
   - {fileID: 21300000, guid: cbeb9cd4cdecc654ea739340e85a9361, type: 3}
-  pawnPrefab: {fileID: 1554731184441305777, guid: 15886d8055859e74ab3993b5e034dd7a, type: 3}
-  rookPrefab: {fileID: 199902399641095605, guid: cb146cb76950c0845b2a99ccf97594b4, type: 3}
-  knightPrefab: {fileID: 8326040160858602325, guid: 8d0755938608d7e48974f6452c889511, type: 3}
-  bishopPrefab: {fileID: 2054708985609411183, guid: 087384afec05eca4cb88f101939c5459, type: 3}
-  queenPrefab: {fileID: 1369678446449263660, guid: e02a2fa44003324438f1eada6194dd26, type: 3}
-  kingPrefab: {fileID: 7975595195283101455, guid: f9cb29e0bd2ae7d4aae6172ef15fc403, type: 3}
+  errorSprite: {fileID: 21300000, guid: 84f3dc3aef332b64484f38bf10f7cb3d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
