@@ -18,6 +18,7 @@ public class BoardManager : MonoBehaviour
     public Sprite[] kingSprites;
     public Sprite errorSprite;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI turnText;
 
     void Awake()
     {

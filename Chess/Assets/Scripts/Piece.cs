@@ -84,9 +84,10 @@ public class Piece : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        if (Board.turn == ((Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black))
+        if (Board.turn != ((Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black))
         {
-
+            // it's not your turn
+            return;
         }
         if (!IsPickedUp())
         {
@@ -115,6 +116,9 @@ public class Piece : MonoBehaviour
             transform.position = new Vector3(x, y, -1);
             pieceCode ^= (byte)(pieceCode & PickedUp);
             pieceCode |= HasMoved;
+            Board.turn = (Board.turn == Colour.White) ? Colour.Black : Colour.White;
+            string turnStr = (Board.turn == Colour.White) ? "White" : "Black";
+            BoardManager.Instance.turnText.text = $"{turnStr} to move";
         }
     }
     //private void OnDrawGizmos()
