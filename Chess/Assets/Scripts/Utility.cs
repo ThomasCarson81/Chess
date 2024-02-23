@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public static class Utility
 {
-
     public static byte RemoveMetadata(byte pieceCode)
     {
         /* Explanation
@@ -34,7 +34,7 @@ public static class Utility
          * 00000100
          * so it's a bishop
          */
-        return (byte)(pieceCode & 5);
+        return (byte)(pieceCode & 7);
     }
     public static bool IsNonePiece(byte pieceCode)
     {
@@ -163,11 +163,53 @@ public static class Utility
         char file = (char)((boardIndex - rankInt) / 8 + 1 + '0');
         return $"{rank}{file}";
     }
-    public static byte PieceAtWorldPos(float x, float y)
+    public static byte PieceCodeAtWorldPos(float x, float y)
     {
-        Collider2D coll = Physics2D.OverlapPoint(new Vector2(x, y));
-        if (coll == null) return 0;
-        if (!coll.gameObject.TryGetComponent(out Piece pc)) return 0;
-        return pc.pieceCode;
+        List<Collider2D> colls = new();
+        ContactFilter2D cf = new();
+        Physics2D.OverlapPoint(new Vector2(x, y), cf, colls);
+        foreach (Collider2D coll in colls)
+        {
+            if (coll.gameObject.TryGetComponent(out Piece pc))
+            {
+                if (pc.IsPickedUp())
+                {
+                    continue;
+                }
+                return pc.pieceCode;
+            }
+        }
+        return 0;
+    }
+    public static GameObject PieceObjectAtWorldPos(float x, float y)
+    {
+        List<Collider2D> colls = new();
+        ContactFilter2D cf = new();
+        Physics2D.OverlapPoint(new Vector2(x, y), cf, colls);
+        foreach (Collider2D coll in colls)
+        {
+            if (coll.gameObject.TryGetComponent(out Piece pc))
+            {
+                if (pc.IsPickedUp())
+                {
+                    continue;
+                }
+                return pc.gameObject;
+            }
+        }
+        return null;
+    }
+    public static int GetMaterial(byte pieceCode)
+    {
+        int material = TypeCode(pieceCode) switch
+        {
+            2 => 1,
+            3 => 3,
+            4 => 3,
+            5 => 5,
+            6 => 9,
+            _ => 0,
+        };
+        return material;
     }
 }

@@ -33,7 +33,6 @@ public class Piece : MonoBehaviour
     public byte pieceCode;
     SpriteRenderer sr;
 
-
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -85,17 +84,37 @@ public class Piece : MonoBehaviour
     }
     private void OnMouseDown()
     {
+        if (Board.turn == ((Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black))
+        {
+
+        }
         if (!IsPickedUp())
         {
-            pieceCode |= PickedUp;
+            pieceCode |= PickedUp; // pick up piece
         }
         else
         {
-            pieceCode ^= (byte)(pieceCode & PickedUp);
+            // put piece down
+            
             float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
             float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
-            string newPos = Utility.WorldPosToNotation(x, y);
+            // if there is a piece of the same colour at the position, don't put the piece down
+            byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);
+            if (Utility.IsColour(targetSquareCode, Utility.ColourCode(pieceCode)))
+            {
+                return;
+            }
+            if (!Utility.IsNonePiece(targetSquareCode))
+            {
+                // capture
+                GameObject enemy = Utility.PieceObjectAtWorldPos(x, y);
+                Colour colour = (Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black;
+                Board.AddMaterial(Utility.GetMaterial(targetSquareCode), colour);
+                Destroy(enemy);
+            }
             transform.position = new Vector3(x, y, -1);
+            pieceCode ^= (byte)(pieceCode & PickedUp);
+            pieceCode |= HasMoved;
         }
     }
     //private void OnDrawGizmos()

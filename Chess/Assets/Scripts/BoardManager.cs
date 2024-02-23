@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviour
@@ -16,6 +17,7 @@ public class BoardManager : MonoBehaviour
     public Sprite[] queenSprites;
     public Sprite[] kingSprites;
     public Sprite errorSprite;
+    public TextMeshProUGUI scoreText;
 
     void Awake()
     {

@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using TMPro;
 
 public sealed class Board
 {
     public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
+    public static int blackMaterial = 0;
+    public static int whiteMaterial = 0;
+    public static Colour turn = Colour.White;
+
     public Board()
     {
         square = PositionFromFEN(startFEN);
@@ -36,6 +41,19 @@ public sealed class Board
         script.pieceCode = square[boardIndex];
         return piece;
     }
+    public static void AddMaterial(int material, Colour colour)
+    {
+        switch (colour)
+        {
+            case Colour.Black:
+                blackMaterial += material;
+                break;
+            case Colour.White: 
+                whiteMaterial += material;
+                break;
+        }
+        BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
+    } 
     byte[] PositionFromFEN(string fen)
     {
         string resStr = string.Empty;
@@ -100,4 +118,9 @@ public sealed class Board
         //Debug.Log($"len(FEN)={result.Length}");
         return result;
     }
+}
+public enum Colour
+{
+    Black = 0,
+    White = 1
 }
