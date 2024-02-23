@@ -1,4 +1,3 @@
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,7 +31,9 @@ public class Piece : MonoBehaviour
 
     public byte pieceCode;
     SpriteRenderer sr;
-
+    float prevX = 0;
+    float prevY = 0;
+    public Colour colour;
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -82,9 +83,28 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPickedUp(pieceCode);
     }
+    void Move(float x, float y, bool updateHasMoved=true)
+    {
+        transform.position = new Vector3(x, y, 0);
+        pieceCode ^= (byte)(pieceCode & PickedUp);
+        if (updateHasMoved)
+        {
+            pieceCode |= HasMoved;
+        }
+    }
+    List<int> CalculateMoves()
+    {
+        int currentBoardIndex = Utility.NotationToBoardIndex(Utility.WorldPosToNotation(transform.position.x, transform.position.y));
+        switch (Utility.TypeCode(pieceCode))
+        {
+            case Pawn:
+                return MoveSets.CalculatePawnMoves(currentBoardIndex, colour, HasPieceMoved());
+        }
+        return new();
+    } 
     private void OnMouseDown()
     {
-        if (Board.turn != ((Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black))
+        if (Board.turn != colour)
         {
             // it's not your turn
             return;
@@ -92,40 +112,33 @@ public class Piece : MonoBehaviour
         if (!IsPickedUp())
         {
             pieceCode |= PickedUp; // pick up piece
+            prevX = transform.position.x;
+            prevY = transform.position.y;
         }
         else
         {
             // put piece down
-            
             float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
             float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
-            // if there is a piece of the same colour at the position, don't put the piece down
             byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);
-            if (Utility.IsColour(targetSquareCode, Utility.ColourCode(pieceCode)))
+            // if the target square is the square the piece is on
+            if (x == prevX && y == prevY)
             {
+                Move(x, y, false);
                 return;
             }
+            // if there is a piece of the same colour at the position, don't put the piece down
+            if (Utility.IsColour(targetSquareCode, Utility.ColourCode(pieceCode))) return;
+            // if it's a capture
             if (!Utility.IsNonePiece(targetSquareCode))
             {
-                // capture
                 GameObject enemy = Utility.PieceObjectAtWorldPos(x, y);
                 Colour colour = (Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black;
                 Board.AddMaterial(Utility.GetMaterial(targetSquareCode), colour);
                 Destroy(enemy);
             }
-            transform.position = new Vector3(x, y, -1);
-            pieceCode ^= (byte)(pieceCode & PickedUp);
-            pieceCode |= HasMoved;
-            Board.turn = (Board.turn == Colour.White) ? Colour.Black : Colour.White;
-            string turnStr = (Board.turn == Colour.White) ? "White" : "Black";
-            BoardManager.Instance.turnText.text = $"{turnStr} to move";
+            Move(x, y);
+            Board.ChangeTurn();
         }
     }
-    //private void OnDrawGizmos()
-    //{
-    //    Gizmos.color = Color.red;
-    //    Vector3 mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-    //    Vector3 sPos = new(Mathf.Round(mPos.x + 0.5f) - 0.5f, Mathf.Round(mPos.y + 0.5f) - 0.5f, 0);
-    //    Gizmos.DrawSphere(sPos, 0.1f);
-    //}
 }

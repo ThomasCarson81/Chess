@@ -39,6 +39,7 @@ public sealed class Board
         GameObject piece = Object.Instantiate(BoardManager.Instance.piecePrefab, pos, Quaternion.identity);
         Piece script = piece.GetComponent<Piece>();
         script.pieceCode = square[boardIndex];
+        script.colour = (Utility.ColourCode(script.pieceCode) == Piece.White) ? Colour.White : Colour.Black;
         return piece;
     }
     public static void AddMaterial(int material, Colour colour)
@@ -117,6 +118,12 @@ public sealed class Board
         //Debug.Log($"FEN:\n{resStr}");
         //Debug.Log($"len(FEN)={result.Length}");
         return result;
+    }
+    public static void ChangeTurn()
+    {
+        turn = (turn == Colour.White) ? Colour.Black : Colour.White;
+        string turnStr = (turn == Colour.White) ? "White" : "Black";
+        BoardManager.Instance.turnText.text = $"{turnStr} to move";
     }
 }
 public enum Colour

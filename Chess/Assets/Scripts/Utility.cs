@@ -60,6 +60,12 @@ public static class Utility
          */
         return (pieceCode & colour) > 0;
     }
+    public static bool IsColour(byte pieceCode, Colour colour)
+    {
+        byte byteColour = (colour == Colour.White) ? Piece.White : Piece.Black;
+        Colour clr = ((pieceCode & byteColour) == Piece.White) ? Colour.White : Colour.Black;
+        return clr == colour;
+    }
     public static bool HasMoved(byte pieceCode)
     {
         /* Explanation
