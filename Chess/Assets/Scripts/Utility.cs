@@ -86,11 +86,9 @@ public static class Utility
          */
         return (currentCode & questionCode) > 0;
     }
-    /// <summary>
-    ///     DO NOT USE THIS OUTSIDE OF BOARD CREATION - IT WON'T WORK
-    /// </summary>
     public static Vector3 BoardIndexToWorldPos(int boardIndex)
     {
+        // Note: this is only for **squares**, not the pieces on those squares.
         string notation = BoardIndexToNotation(boardIndex);
         return NotationToWorldPos(notation);
     }

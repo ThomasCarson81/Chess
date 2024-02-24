@@ -484,6 +484,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   piecePrefab: {fileID: 4415624333441761004, guid: 2cdbd2113c2f94f4aa85b3db78864e54, type: 3}
+  moveDotPrefab: {fileID: 8943478088053170893, guid: a712eb150ca87524cba0b8f435710c78, type: 3}
   pawnSprites:
   - {fileID: 21300000, guid: b35d820abfc10194687a5363509906cd, type: 3}
   - {fileID: 21300000, guid: c311456a7e41abf40850ee98277897d7, type: 3}

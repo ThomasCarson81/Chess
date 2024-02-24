@@ -10,6 +10,7 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance { get; private set; }
     public Board board;
     public GameObject piecePrefab;
+    public GameObject moveDotPrefab;
     public Sprite[] pawnSprites;
     public Sprite[] rookSprites;
     public Sprite[] knightSprites;

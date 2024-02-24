@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public static class MoveSets
@@ -36,36 +37,119 @@ public static class MoveSets
     public static List<int> CalculatePawnMoves(int currentIndex, Colour colour, bool hasMoved)
     {
         List<int> result = new();
-        Vector3 pos;
-        pos = Utility.BoardIndexToWorldPos(currentIndex + 7);
-        byte piecetld = Utility.PieceCodeAtWorldPos(pos.x, pos.y);
-        if (Utility.IsNonePiece(piecetld) || !Utility.IsColour(piecetld, colour))
+        int indexTopLeft = (colour == Colour.White) ? (currentIndex + 7) : currentIndex - 9;
+        if (indexTopLeft >=0 && indexTopLeft < 64)
         {
-            result.Add(currentIndex + 8);
+            byte pieceTopLeft = Board.PieceCodeAtIndex(indexTopLeft);
+            if (Utility.IsNonePiece(pieceTopLeft) || !Utility.IsColour(pieceTopLeft, colour))
+            {
+                result.Add(indexTopLeft);
+            }
         }
-        pos = Utility.BoardIndexToWorldPos(currentIndex + 9);
-        byte piecetrd = Utility.PieceCodeAtWorldPos(pos.x, pos.y);
-        if (Utility.IsNonePiece(piecetrd) || !Utility.IsColour(piecetrd, colour))
+        int indexTopRight = (colour == Colour.White) ? (currentIndex + 9) : (currentIndex - 7);
+        if (indexTopRight >=0 && indexTopRight < 64)
         {
-            result.Add(currentIndex + 9);
+            byte pieceTopRight = Board.PieceCodeAtIndex(indexTopRight);
+            if (Utility.IsNonePiece(pieceTopRight) || !Utility.IsColour(pieceTopRight, colour))
+            {
+                result.Add(indexTopRight);
+            }
         }
-        pos = Utility.BoardIndexToWorldPos(currentIndex + 8);
-        byte piece1forward = Utility.PieceCodeAtWorldPos(pos.x, pos.y);
-        pos = Utility.BoardIndexToWorldPos(currentIndex + 16);
-        byte piece2forward = Utility.PieceCodeAtWorldPos(pos.x, pos.y);
-        if (Utility.IsNonePiece(piece1forward))
+        int index1Forward = (colour == Colour.White) ? (currentIndex + 8) : (currentIndex - 8);
+        if (index1Forward >=0 && index1Forward < 64)
         {
-            result.Add(currentIndex + 8);
+            byte piece1Forward = Board.PieceCodeAtIndex(index1Forward);
+            if (!Utility.IsNonePiece(piece1Forward)) return result;
+            result.Add(index1Forward); 
         }
-        else
+        if (hasMoved) return result;
+        int index2Forward = (colour == Colour.White) ? (currentIndex + 16) : (currentIndex - 16);
+        if (index2Forward >=0 && index2Forward < 64)
         {
-            return result;
-        }
-        if (!hasMoved && Utility.IsNonePiece(piece2forward))
-        {
-            result.Add(currentIndex + 16);
+            byte piece2Forward = Board.PieceCodeAtIndex(index2Forward);
+            if (Utility.IsNonePiece(piece2Forward))
+            {
+                result.Add(index2Forward);
+            }
         }
         return result;
     }
-
+    public static List<int> CalculateKnightMoves(int currentIndex, Colour colour)
+    {
+        List<int> result = new();
+        foreach (int i in Knight)
+        {
+            byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+            if (Utility.IsNonePiece(targetCode) || !Utility.IsColour(targetCode, colour))
+            {
+                result.Add(i);
+            }
+        }
+        return result;
+    }
+    public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved)
+    {
+        List<int> result = new();
+        // hasMoved will be used for castling
+        foreach (int i in King)
+        {
+            byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+             // TODO: check if the move puts the king in check
+            if (Utility.IsNonePiece(targetCode) || !Utility.IsColour(targetCode, colour))
+            {
+                result.Add(i);
+            }
+        }
+        return result;
+    }
+    public static List<int> CalculateRookMoves(int currentIndex, Colour colour)
+    {
+        List<int> result = new();
+        foreach (int[] dir in Rook)
+        {
+            foreach (int i in dir)
+            {
+                byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+                if (Utility.IsNonePiece(targetCode))
+                {
+                    result.Add(i);
+                    continue;
+                }
+                if (!Utility.IsColour(targetCode, colour))
+                {
+                    result.Add(i);
+                }
+                break; // finish with this direction
+            }
+        }
+        return result;
+    }
+    public static List<int> CalculateBishopMoves(int currentIndex, Colour colour)
+    {
+        List<int> result = new();
+        foreach (int[] dir in Rook)
+        {
+            foreach (int i in dir)
+            {
+                byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+                if (Utility.IsNonePiece(targetCode))
+                {
+                    result.Add(i);
+                    continue;
+                }
+                if (!Utility.IsColour(targetCode, colour))
+                {
+                    result.Add(i);
+                }
+                break; // finish with this direction
+            }
+        }
+        return result;
+    }
+    public static List<int> CalculateQueenMoves(int currentIndex, Colour colour)
+    {
+        List<int> result = CalculateBishopMoves(currentIndex, colour);
+        result.AddRange(CalculateRookMoves(currentIndex, colour));
+        return result;
+    }
 }

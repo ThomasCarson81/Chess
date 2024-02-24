@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using TMPro;
+using Unity.Loading;
 
 public sealed class Board
 {
@@ -13,6 +14,7 @@ public sealed class Board
     public static int blackMaterial = 0;
     public static int whiteMaterial = 0;
     public static Colour turn = Colour.White;
+    public static List<GameObject> moveDots = new();
 
     public Board()
     {
@@ -40,6 +42,7 @@ public sealed class Board
         Piece script = piece.GetComponent<Piece>();
         script.pieceCode = square[boardIndex];
         script.colour = (Utility.ColourCode(script.pieceCode) == Piece.White) ? Colour.White : Colour.Black;
+        script.boardIndex = boardIndex;
         return piece;
     }
     public static void AddMaterial(int material, Colour colour)
@@ -124,6 +127,37 @@ public sealed class Board
         turn = (turn == Colour.White) ? Colour.Black : Colour.White;
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
+    }
+    public static byte PieceCodeAtIndex(int index)
+    {
+        foreach (GameObject obj in pieceObjs)
+        {
+            Piece pc = obj.GetComponent<Piece>();
+            if (pc.boardIndex == index)
+            {
+                return pc.pieceCode;
+            }
+        }
+        return 0;
+    }
+    public static void RenderMoveDots(List<int> moves)
+    {
+        UnRenderMoveDots();
+        foreach (int i in moves)
+        {
+            if (i < 0 || i >= 64) continue;
+            GameObject dot = Object.Instantiate(BoardManager.Instance.moveDotPrefab);
+            dot.transform.position = Utility.BoardIndexToWorldPos(i);
+            moveDots.Add(dot);
+        }
+    }
+    public static void UnRenderMoveDots()
+    {
+        foreach (GameObject gameObject in moveDots)
+        {
+            Object.Destroy(gameObject);
+        }
+        moveDots.Clear();
     }
 }
 public enum Colour

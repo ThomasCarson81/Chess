@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -34,6 +35,8 @@ public class Piece : MonoBehaviour
     float prevX = 0;
     float prevY = 0;
     public Colour colour;
+    public int boardIndex;
+    public List<int> legalMoves = new();
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -83,6 +86,16 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPickedUp(pieceCode);
     }
+    public List<int> LegalMoves()
+    {
+        legalMoves = CalculateMoves();
+        List<int> moves = new();
+        foreach (int i in legalMoves)
+        {
+            moves.Add(i+boardIndex);
+        }
+        return moves;
+    }
     void Move(float x, float y, bool updateHasMoved=true)
     {
         transform.position = new Vector3(x, y, 0);
@@ -91,16 +104,20 @@ public class Piece : MonoBehaviour
         {
             pieceCode |= HasMoved;
         }
+        boardIndex = Utility.NotationToBoardIndex(Utility.WorldPosToNotation(transform.position.x, transform.position.y));
     }
     List<int> CalculateMoves()
     {
-        int currentBoardIndex = Utility.NotationToBoardIndex(Utility.WorldPosToNotation(transform.position.x, transform.position.y));
-        switch (Utility.TypeCode(pieceCode))
+        return Utility.TypeCode(pieceCode) switch
         {
-            case Pawn:
-                return MoveSets.CalculatePawnMoves(currentBoardIndex, colour, HasPieceMoved());
-        }
-        return new();
+            Pawn => MoveSets.CalculatePawnMoves(boardIndex, colour, HasPieceMoved()),
+            Knight => MoveSets.CalculateKnightMoves(boardIndex, colour),
+            King => MoveSets.CalculateKingMoves(boardIndex, colour, HasPieceMoved()),
+            Bishop => MoveSets.CalculateBishopMoves(boardIndex, colour),
+            Rook => MoveSets.CalculateRookMoves(boardIndex, colour),
+            Queen => MoveSets.CalculateQueenMoves(boardIndex, colour),
+            _ => new(),
+        };
     } 
     private void OnMouseDown()
     {
@@ -114,10 +131,15 @@ public class Piece : MonoBehaviour
             pieceCode |= PickedUp; // pick up piece
             prevX = transform.position.x;
             prevY = transform.position.y;
+            legalMoves = CalculateMoves();
+            Board.RenderMoveDots(legalMoves);
+            sr.size += new Vector2(2, 2);
         }
         else
         {
             // put piece down
+            sr.size -= new Vector2(2,2);
+            Board.UnRenderMoveDots();
             float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
             float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
             byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);
@@ -135,6 +157,7 @@ public class Piece : MonoBehaviour
                 GameObject enemy = Utility.PieceObjectAtWorldPos(x, y);
                 Colour colour = (Utility.ColourCode(pieceCode) == White) ? Colour.White : Colour.Black;
                 Board.AddMaterial(Utility.GetMaterial(targetSquareCode), colour);
+                Board.pieceObjs.Remove(enemy);
                 Destroy(enemy);
             }
             Move(x, y);
