@@ -96,7 +96,7 @@ public class Piece : MonoBehaviour
         }
         return moves;
     }
-    void Move(float x, float y, bool updateHasMoved=true)
+    void Move(float x, float y, bool updateHasMoved)
     {
         transform.position = new Vector3(x, y, 0);
         pieceCode ^= (byte)(pieceCode & PickedUp);
@@ -104,7 +104,10 @@ public class Piece : MonoBehaviour
         {
             pieceCode |= HasMoved;
         }
-        boardIndex = Utility.NotationToBoardIndex(Utility.WorldPosToNotation(transform.position.x, transform.position.y));
+        string not = Utility.WorldPosToNotation(transform.position.x, transform.position.y);
+        boardIndex = Utility.NotationToBoardIndex(not);
+        Debug.Log($"Notation: {not}, index: {boardIndex}");
+        
     }
     List<int> CalculateMoves()
     {
@@ -160,7 +163,7 @@ public class Piece : MonoBehaviour
                 Board.pieceObjs.Remove(enemy);
                 Destroy(enemy);
             }
-            Move(x, y);
+            Move(x, y, true);
             Board.ChangeTurn();
         }
     }

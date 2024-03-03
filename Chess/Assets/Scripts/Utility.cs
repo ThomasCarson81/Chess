@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public static class Utility
@@ -57,14 +58,16 @@ public static class Utility
          * 00100000 (White code) =
          * 00100000
          * this is > 0, so it is true
+         * 
+         * this returns false if the input pieceCode is a NonePiece
          */
         return (pieceCode & colour) > 0;
     }
     public static bool IsColour(byte pieceCode, Colour colour)
     {
+        // returns true if the input pieceCode is a NonePiece
         byte byteColour = (colour == Colour.White) ? Piece.White : Piece.Black;
-        Colour clr = ((pieceCode & byteColour) == Piece.White) ? Colour.White : Colour.Black;
-        return clr == colour;
+        return IsColour(pieceCode, byteColour);
     }
     public static bool HasMoved(byte pieceCode)
     {
@@ -151,13 +154,10 @@ public static class Utility
     public static int NotationToBoardIndex(string sqr)
     {
         // sqr must be length 2, with the 1st being a char and the 2nd an int 
-        if (sqr.Length != 2 || !char.IsLetter(sqr[0]) || !char.IsDigit(sqr[1]))
-        {
-            return -1;
-        }
-        int rank = sqr[0] - 'a'; // a = 0, b = 1, c = 2, etc
-        int file = sqr[1] - '0' - 1; // converts from char to int, but subtracts 1 as arrays are 0-based indexed
-        return file + 8 * rank;
+        if (sqr.Length != 2 || !char.IsLetter(sqr[0]) || !char.IsDigit(sqr[1])) return -1;
+        int file = sqr[0] - 'a'; // a = 0, b = 1, c = 2, etc
+        int rank = sqr[1] - '0' - 1; // converts from char to int, but subtracts 1 because arrays a 0-based indexed
+        return file + (8 * rank);
     }
     public static string BoardIndexToNotation(int boardIndex)
     {
