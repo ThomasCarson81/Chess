@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -18,7 +19,7 @@ public static class MoveSets
     public static readonly int[][] Bishop =
     {
         new int[] {9, 18, 27, 36, 45, 54, 63 },
-        new int[] {-9, -18, -27, -36, -54, -63 },
+        new int[] {-9, -18, -27, -36, -45, -54, -63 },
         new int[] {7, 14, 21, 28, 35, 42, 49 },
         new int[] {-7, -14, -21, -28, -35, -42, -49 }
     };
@@ -39,17 +40,16 @@ public static class MoveSets
     }
     static bool IsNoneOrEnemy(byte piece, Colour friendlyColour)
     {
-        return Utility.IsNonePiece(piece) || !Utility.IsColour(piece, friendlyColour);
+        return Utility.IsNonePiece(piece) || (!Utility.IsColour(piece, friendlyColour) && !Utility.IsPiece(piece, Piece.EnPassant));
     }
     public static List<int> CalculatePawnMoves(int currentIndex, Colour colour, bool hasMoved)
     {
-        // I think it works...
         List<int> result = new();
-        int indexTopLeft = (colour == Colour.White) ? (currentIndex + 7) : currentIndex - 9;
+        int indexTopLeft = (colour == Colour.White) ? (currentIndex + 7) : (currentIndex - 9);
         if (IsValidIndex(indexTopLeft))
         {
             byte pieceTopLeft = Board.PieceCodeAtIndex(indexTopLeft);
-            if (!Utility.IsNonePiece(pieceTopLeft) && !Utility.IsColour(pieceTopLeft, colour))
+            if ((!Utility.IsNonePiece(pieceTopLeft) || Utility.IsPiece(pieceTopLeft, Piece.EnPassant)) && !Utility.IsColour(pieceTopLeft, colour))
             {
                 result.Add(indexTopLeft);
             }
@@ -58,27 +58,26 @@ public static class MoveSets
         if (IsValidIndex(indexTopRight))
         {
             byte pieceTopRight = Board.PieceCodeAtIndex(indexTopRight);
-            if (!Utility.IsNonePiece(pieceTopRight) && !Utility.IsColour(pieceTopRight, colour))
-            {
+            if ((!Utility.IsNonePiece(pieceTopRight) || Utility.IsPiece(pieceTopRight, Piece.EnPassant))
+                && !Utility.IsColour(pieceTopRight, colour))
                 result.Add(indexTopRight);
-            }
         }
         int index1Forward = (colour == Colour.White) ? (currentIndex + 8) : (currentIndex - 8);
         if (IsValidIndex(index1Forward))
         {
             byte piece1Forward = Board.PieceCodeAtIndex(index1Forward);
-            if (!Utility.IsNonePiece(piece1Forward)) return result;
+            if (!Utility.IsNonePiece(piece1Forward))
+                return result;
             result.Add(index1Forward);
         }
-        if (hasMoved) return result;
+        if (hasMoved)
+            return result;
         int index2Forward = (colour == Colour.White) ? (currentIndex + 16) : (currentIndex - 16);
         if (IsValidIndex(index2Forward))
         {
             byte piece2Forward = Board.PieceCodeAtIndex(index2Forward);
             if (Utility.IsNonePiece(piece2Forward))
-            {
                 result.Add(index2Forward);
-            }
         }
         return result;
     }
@@ -89,9 +88,28 @@ public static class MoveSets
         {
             if (!IsValidIndex(currentIndex + i)) continue;
             byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+            Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
+            Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
+            float xDif = Mathf.Abs(newPos.x - currPos.x);
+            float yDif = Mathf.Abs(newPos.y - currPos.y);
+            bool valid = false;
+            if ( (xDif == 2) && (yDif == 1) )
+            {
+                //Console.WriteLine
+                valid = true;
+            }
+            else if ( (xDif == 1) &&  (yDif == 2) ) 
+            {
+                valid = true;
+            }
+            if (!valid)
+            {
+                //Console.WriteLine($"{currentIndex}");
+                continue;
+            }
             if (IsNoneOrEnemy(targetCode, colour))
             {
-                result.Add(i);
+                result.Add(currentIndex + i);
             }
         }
         return result;
@@ -106,7 +124,7 @@ public static class MoveSets
             // TODO: check if the move puts the king in check
             if (IsNoneOrEnemy(targetCode, colour))
             {
-                result.Add(i);
+                result.Add(currentIndex + i);
             }
         }
         return result;
@@ -120,7 +138,13 @@ public static class MoveSets
             {
                 if (!IsValidIndex(currentIndex + i)) break;
                 byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
-                Debug.Log(currentIndex + i);
+                Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
+                Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
+                if (currPos.x != newPos.x && currPos.y != newPos.y)
+                {
+                    // resolves wrapping
+                    break;
+                }
                 if (Utility.IsNonePiece(targetCode))
                 {
                     result.Add(currentIndex + i);
@@ -138,11 +162,19 @@ public static class MoveSets
     public static List<int> CalculateBishopMoves(int currentIndex, Colour colour)
     {
         List<int> result = new();
-        foreach (int[] dir in Rook)
+        foreach (int[] dir in Bishop)
         {
             foreach (int i in dir)
             {
+                if (!IsValidIndex(currentIndex + i)) break;
                 byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+                Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
+                Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
+                if (Mathf.Abs(newPos.x - currPos.x) != Mathf.Abs(newPos.y - currPos.y))
+                {
+                    // resolves wrapping
+                    break;
+                }
                 if (Utility.IsNonePiece(targetCode))
                 {
                     result.Add(currentIndex + i);

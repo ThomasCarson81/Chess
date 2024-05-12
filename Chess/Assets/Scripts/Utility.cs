@@ -39,7 +39,7 @@ public static class Utility
     }
     public static bool IsNonePiece(byte pieceCode)
     {
-        return pieceCode == 0;
+        return pieceCode == 0 || IsPiece(pieceCode, Piece.EnPassant);
     }
     public static bool IsPickedUp(byte pieceCode)
     {
@@ -85,9 +85,9 @@ public static class Utility
          * 00001011 (a white knight which hasn't moved) Bitwise AND'd with
          * 00000011 (Knight code) =
          * 00000011
-         * this is > 0, so it is true
+         * they are equal, so it is true
          */
-        return (currentCode & questionCode) > 0;
+        return (currentCode & questionCode) == questionCode;
     }
     public static Vector3 BoardIndexToWorldPos(int boardIndex)
     {
@@ -151,6 +151,10 @@ public static class Utility
         };
         return $"{file}{rank}";
     }
+    public static int WorldPosToBoardIndex(float x, float y)
+    {
+        return NotationToBoardIndex(WorldPosToNotation(x, y));
+    }
     public static int NotationToBoardIndex(string sqr)
     {
         // sqr must be length 2, with the 1st being a char and the 2nd an int 
@@ -195,9 +199,7 @@ public static class Utility
             if (coll.gameObject.TryGetComponent(out Piece pc))
             {
                 if (pc.IsPickedUp())
-                {
                     continue;
-                }
                 return pc.gameObject;
             }
         }
@@ -207,12 +209,13 @@ public static class Utility
     {
         int material = TypeCode(pieceCode) switch
         {
-            2 => 1,
-            3 => 3,
-            4 => 3,
-            5 => 5,
-            6 => 9,
-            _ => 0,
+            2 => 1, // Pawn
+            3 => 3, // Knight
+            4 => 3, // Bishop
+            5 => 5, // Rook
+            6 => 9, // Queen
+            7 => 1, // En Passent (pawn)
+            _ => 0, // King or error
         };
         return material;
     }

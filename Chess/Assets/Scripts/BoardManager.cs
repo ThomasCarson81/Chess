@@ -20,6 +20,7 @@ public class BoardManager : MonoBehaviour
     public Sprite errorSprite;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
+    public GameObject enPassentPiece;
 
     void Awake()
     {

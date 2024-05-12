@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using TMPro;
-using Unity.Loading;
 
 public sealed class Board
 {
@@ -22,27 +21,23 @@ public sealed class Board
         GameObject obj;
         for (int i = 0; i < square.Length; i++)
         {
-            obj = InstantiatePiece(i);
+            if (Utility.IsNonePiece(square[i])) continue;
+            obj = InstantiatePiece(i, square[i]);
             if (obj != null) pieceObjs.Add(obj);
         }
     }
-    public static GameObject InstantiatePiece(int boardIndex)
+    public static GameObject InstantiatePiece(int boardIndex, byte pieceCode)
     {
-        if (Utility.IsNonePiece(square[boardIndex])) return null;
+        //if (Utility.IsNonePiece(square[boardIndex])) return null;
+        if (BoardManager.Instance == null) Debug.LogError("BoardManager.Instance = null");
+        if (BoardManager.Instance.piecePrefab == null) Debug.LogError("BoardManager.Instance.piecePrefab = null");
         Vector3 pos = Utility.BoardIndexToWorldPos(boardIndex);
-        if (BoardManager.Instance == null)
-        {
-            Debug.LogError("BoardManager.Instance = null");
-        }
-        if (BoardManager.Instance.piecePrefab == null)
-        {
-            Debug.LogError("BoardManager.Instance.piecePrefab = null");
-        }
         GameObject piece = Object.Instantiate(BoardManager.Instance.piecePrefab, pos, Quaternion.identity);
         Piece script = piece.GetComponent<Piece>();
-        script.pieceCode = square[boardIndex];
-        script.colour = (Utility.ColourCode(script.pieceCode) == Piece.White) ? Colour.White : Colour.Black;
+        script.pieceCode = pieceCode;
+        script.colour = (Utility.ColourCode(pieceCode) == Piece.White) ? Colour.White : Colour.Black;
         script.boardIndex = boardIndex;
+        pieceObjs.Add(piece);
         return piece;
     }
     public static void AddMaterial(int material, Colour colour)
@@ -57,7 +52,7 @@ public sealed class Board
                 break;
         }
         BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
-    } 
+    }
     byte[] PositionFromFEN(string fen)
     {
         string resStr = string.Empty;
@@ -132,7 +127,16 @@ public sealed class Board
     {
         foreach (GameObject obj in pieceObjs)
         {
+            if (obj == null)
+            {
+                pieceObjs.Remove(obj);
+                return 0;
+            }
             Piece pc = obj.GetComponent<Piece>();
+            if (pc == null)
+            {
+                return 0;
+            }
             if (pc.boardIndex == index)
             {
                 return pc.pieceCode;
