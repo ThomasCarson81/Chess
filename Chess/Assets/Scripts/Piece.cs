@@ -88,36 +88,28 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPickedUp(pieceCode);
     }
-    //public List<int> LegalMoves()
-    //{
-    //    legalMoves = CalculateMoves();
-    //    List<int> moves = new();
-    //    foreach (int i in legalMoves)
-    //    {
-    //        moves.Add(i+boardIndex);
-    //    }
-    //    return moves;
-    //}
     void Move(float x, float y, bool updateHasMoved, float prevX, float prevY)
     {
         transform.position = new Vector3(x, y, 0);
         pieceCode ^= (byte)(pieceCode & PickedUp);
         boardIndex = Utility.WorldPosToBoardIndex(x, y);
-        if (x != prevX || y != prevY)
+        if (x != prevX || y != prevY) // if it actually moved
         {
             if (BoardManager.Instance.enPassentPiece != null)
             {
                 Board.pieceObjs.Remove(BoardManager.Instance.enPassentPiece);
                 Destroy(BoardManager.Instance.enPassentPiece);
-            }
                 BoardManager.Instance.enPassentPiece = null;
+            }
         }
-        if (updateHasMoved) pieceCode |= HasMoved;
-        if (!IsPiece(Pawn)) return;
+        if (updateHasMoved)
+            pieceCode |= HasMoved;
+        if (!IsPiece(Pawn))
+            return;
         if (Mathf.Abs(y-prevY) >= 2)
         {
             float epX = x;
-            float epY = IsColour(White) ? (prevY + 1) : (prevY - 1);
+            float epY = IsColour(White) ? prevY + 1 : prevY - 1;
             BoardManager.Instance.enPassentPiece = Board.InstantiatePiece(
                 Utility.WorldPosToBoardIndex(epX, epY),
                 (byte)(Utility.ColourCode(pieceCode) | EnPassant)
@@ -125,36 +117,46 @@ public class Piece : MonoBehaviour
             BoardManager.Instance.enPassentPiece.name = "En Passent";
         }
     }
-    List<int> CalculateMoves()
+    public List<int> CalculateMoves(bool checkForChecks)
     {
         return Utility.TypeCode(pieceCode) switch
         {
             Pawn => MoveSets.CalculatePawnMoves(boardIndex, colour, HasPieceMoved()),
             Knight => MoveSets.CalculateKnightMoves(boardIndex, colour),
-            King => MoveSets.CalculateKingMoves(boardIndex, colour, HasPieceMoved()),
+            King => MoveSets.CalculateKingMoves(boardIndex, colour, HasPieceMoved(), checkForChecks),
             Bishop => MoveSets.CalculateBishopMoves(boardIndex, colour),
             Rook => MoveSets.CalculateRookMoves(boardIndex, colour),
             Queen => MoveSets.CalculateQueenMoves(boardIndex, colour),
             _ => new(),
         };
     } 
+    private void Capture(GameObject enemyObj, byte enemyCode)
+    {
+        Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
+        Board.pieceObjs.Remove(enemyObj);
+        Destroy(enemyObj);
+    }
+    private void PickUp()
+    {
+        pieceCode |= PickedUp;
+        prevX = transform.position.x;
+        prevY = transform.position.y;
+        legalMoves = CalculateMoves(true);
+        Board.RenderMoveDots(legalMoves);
+    }
     private void OnMouseDown()
     {
         if (Board.turn != colour) // it's not your turn
             return;
         if (!IsPickedUp())
         {
-            pieceCode |= PickedUp; // pick up piece
-            prevX = transform.position.x;
-            prevY = transform.position.y;
-            legalMoves = CalculateMoves();
-            Board.RenderMoveDots(legalMoves);
+            PickUp();
             return;
         }
-        float x = (float)Math.Round(transform.position.x + 0.5f) - 0.5f;
-        float y = (float)Math.Round(transform.position.y + 0.5f) - 0.5f;
-
-        // if the target square is the square the piece is on
+        float x = Mathf.Round(transform.position.x + 0.5f) - 0.5f;
+        float y = Mathf.Round(transform.position.y + 0.5f) - 0.5f;
+        
+        // if the target square is the square the piece is on (didn't move)
         if (x == prevX && y == prevY)
         {
             Move(x, y, false, prevX, prevY);
@@ -164,32 +166,21 @@ public class Piece : MonoBehaviour
         if (!legalMoves.Contains(Utility.WorldPosToBoardIndex(x, y)))
             return; // Illegal move
         Board.UnRenderMoveDots();
+
+
         byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);
-            
+        
         // if there is a piece of the same colour at the position, don't put the piece down
         if (Utility.IsColour(targetSquareCode, Utility.ColourCode(pieceCode)))
             return;
-        // if it's a capture
-        if (!Utility.IsNonePiece(targetSquareCode))
-        {
-            GameObject enemy = Utility.PieceObjectAtWorldPos(x, y);
-            Board.AddMaterial(Utility.GetMaterial(targetSquareCode), colour);
-            if (!Board.pieceObjs.Remove(enemy))
-                Debug.Log("enemy removal failed");
-            Destroy(enemy);
-        }
-        // if it's an En Passant capture
+
+        if (!Utility.IsNonePiece(targetSquareCode)) // if it's a capture
+            Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode);
         else if (Utility.IsPiece(targetSquareCode, EnPassant) && IsPiece(Pawn))
         {
-            GameObject enemy;
-            if (colour == Colour.Black)
-                enemy = Utility.PieceObjectAtWorldPos(x, y + 1);
-            else
-                enemy = Utility.PieceObjectAtWorldPos(x, y - 1);
-            Board.AddMaterial(Utility.GetMaterial(targetSquareCode), colour);
-            if (!Board.pieceObjs.Remove(enemy))
-                Debug.Log("enemy removal failed");
-            Destroy(enemy);
+            // if it's an En Passant capture
+            float enemyY = (colour == Colour.Black) ? y + 1 : y - 1;
+            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode);
         }
 
         Move(x, y, true, prevX, prevY);

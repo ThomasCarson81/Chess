@@ -95,7 +95,6 @@ public static class MoveSets
             bool valid = false;
             if ( (xDif == 2) && (yDif == 1) )
             {
-                //Console.WriteLine
                 valid = true;
             }
             else if ( (xDif == 1) &&  (yDif == 2) ) 
@@ -104,7 +103,6 @@ public static class MoveSets
             }
             if (!valid)
             {
-                //Console.WriteLine($"{currentIndex}");
                 continue;
             }
             if (IsNoneOrEnemy(targetCode, colour))
@@ -114,14 +112,25 @@ public static class MoveSets
         }
         return result;
     }
-    public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved)
+    public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved, bool checkForCheck)
     {
         List<int> result = new();
+        Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
+        List<int> enemyMoves;
+        // IDEA: check for checks from the king position using all movesets and searching for the corresponding piece instead of making a list of all enemy moves
+        if (checkForCheck)
+            enemyMoves = Board.GetAllMoves(enemyColour);
+        else
+            enemyMoves = new();
         // hasMoved will be used for castling
         foreach (int i in King)
         {
             byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
-            // TODO: check if the move puts the king in check
+            if (enemyMoves.Contains(currentIndex + i))
+            {
+                // unable to move into check
+                continue;
+            }
             if (IsNoneOrEnemy(targetCode, colour))
             {
                 result.Add(currentIndex + i);

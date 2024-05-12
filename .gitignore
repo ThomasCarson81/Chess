@@ -27,6 +27,7 @@ sysinfo.txt
 *.userprefs
 *.pidb
 *.log
+*.dwlt
 .DS_Store
 
 # Visual Studio cache directory
