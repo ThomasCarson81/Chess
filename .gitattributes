@@ -1,3 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
-Chess/Assets/"TextMesh Pro"/* linguist-vendored
+*.meta linguist-vendored
+*.cginc linguist-vendored
+*.shader linguist-vendored
