@@ -165,18 +165,12 @@ public static class MoveSets
                     break; // resolves wrapping
                 if (Utility.IsNonePiece(targetCode))
                 {
-                    Debug.Log($"{targetCode} is none at {currentIndex + i}, adding");
                     result.Add(currentIndex + i);
                     continue;
                 }
                 if (!Utility.IsColour(targetCode, colour))
                 {
-                    Debug.Log($"{targetCode} is an enemy at {currentIndex + i}, adding");
                     result.Add(currentIndex + i);
-                }
-                else
-                {
-                    Debug.Log($"{targetCode} is a friendly at {currentIndex + i}");
                 }
                 break; // finish with this direction
             }
