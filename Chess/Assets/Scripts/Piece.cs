@@ -135,6 +135,7 @@ public class Piece : MonoBehaviour
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
         Board.pieceObjs.Remove(enemyObj);
         Destroy(enemyObj);
+        BoardManager.Instance.captureSound.Play();
     }
     private void PickUp()
     {
@@ -182,6 +183,8 @@ public class Piece : MonoBehaviour
             float enemyY = (colour == Colour.Black) ? y + 1 : y - 1;
             Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode);
         }
+        else
+            BoardManager.Instance.moveSound.Play();
 
         Move(x, y, true, prevX, prevY);
         Board.ChangeTurn();

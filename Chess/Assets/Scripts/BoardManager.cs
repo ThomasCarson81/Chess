@@ -21,7 +21,8 @@ public class BoardManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
     public GameObject enPassentPiece;
-
+    public AudioSource moveSound;
+    public AudioSource captureSound;
     void Awake()
     {
         if (Instance == null)
