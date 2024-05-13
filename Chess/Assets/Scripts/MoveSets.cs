@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public static class MoveSets
 {
-    //public static readonly int[] Pawn = { 7, 8, 9, 16 };
     public static readonly int[] King = { 7, 8, 9, -1, 1, -9, -8, -7 };
     public static readonly int[] Knight = { -17, -15, -10, -6, 6, 10, 15, 17 };
     public static readonly int[][] Rook =
@@ -94,47 +95,33 @@ public static class MoveSets
             float yDif = Mathf.Abs(newPos.y - currPos.y);
             bool valid = false;
             if ( (xDif == 2) && (yDif == 1) )
-            {
                 valid = true;
-            }
             else if ( (xDif == 1) &&  (yDif == 2) ) 
-            {
                 valid = true;
-            }
             if (!valid)
-            {
                 continue;
-            }
             if (IsNoneOrEnemy(targetCode, colour))
-            {
                 result.Add(currentIndex + i);
-            }
         }
         return result;
     }
     public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved, bool checkForCheck)
     {
         List<int> result = new();
-        Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
-        List<int> enemyMoves;
-        // IDEA: check for checks from the king position using all movesets and searching for the corresponding piece instead of making a list of all enemy moves
-        if (checkForCheck)
-            enemyMoves = Board.GetAllMoves(enemyColour);
-        else
-            enemyMoves = new();
         // hasMoved will be used for castling
         foreach (int i in King)
         {
-            byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
-            if (enemyMoves.Contains(currentIndex + i))
-            {
-                // unable to move into check
+            if (!IsValidIndex(currentIndex + i))
                 continue;
-            }
+            Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
+            Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
+            if (Mathf.Abs(newPos.x - currPos.x) > 1 || Mathf.Abs(newPos.y - currPos.y) > 1)
+                continue; // move wraps
+            byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+            if (checkForCheck && IsAttacked(currentIndex + i, colour))
+                continue; // unable to move into check
             if (IsNoneOrEnemy(targetCode, colour))
-            {
                 result.Add(currentIndex + i);
-            }
         }
         return result;
     }
@@ -145,24 +132,19 @@ public static class MoveSets
         {
             foreach (int i in dir)
             {
-                if (!IsValidIndex(currentIndex + i)) break;
+                if (!IsValidIndex(currentIndex + i)) break; // Dir went off the board
                 byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
                 Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
                 Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
                 if (currPos.x != newPos.x && currPos.y != newPos.y)
-                {
-                    // resolves wrapping
-                    break;
-                }
+                    break; // resolves wrapping
                 if (Utility.IsNonePiece(targetCode))
                 {
                     result.Add(currentIndex + i);
                     continue;
                 }
                 if (!Utility.IsColour(targetCode, colour))
-                {
                     result.Add(currentIndex + i);
-                }
                 break; // finish with this direction
             }
         }
@@ -175,24 +157,19 @@ public static class MoveSets
         {
             foreach (int i in dir)
             {
-                if (!IsValidIndex(currentIndex + i)) break;
+                if (!IsValidIndex(currentIndex + i)) break; // Dir went off the board
                 byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
                 Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
                 Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
                 if (Mathf.Abs(newPos.x - currPos.x) != Mathf.Abs(newPos.y - currPos.y))
-                {
-                    // resolves wrapping
-                    break;
-                }
+                    break; // resolves wrapping
                 if (Utility.IsNonePiece(targetCode))
                 {
                     result.Add(currentIndex + i);
                     continue;
                 }
                 if (!Utility.IsColour(targetCode, colour))
-                {
                     result.Add(currentIndex + i);
-                }
                 break; // finish with this direction
             }
         }
@@ -203,5 +180,134 @@ public static class MoveSets
         List<int> result = CalculateBishopMoves(currentIndex, colour);
         result.AddRange(CalculateRookMoves(currentIndex, colour));
         return result;
+    }
+    public static bool IsAttacked(int index, Colour colour)
+    {
+        Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
+        Vector2 currPos = Utility.BoardIndexToWorldPos(index);
+        Vector2 newPos;
+        #region PAWN_CHECK
+        int indexLeft = (colour == Colour.White) ? (index + 7) : (index - 9);
+        if (IsValidIndex(indexLeft))
+        {
+            byte pieceLeft = Board.PieceCodeAtIndex(indexLeft);
+            newPos = Utility.BoardIndexToWorldPos(indexLeft);
+            bool valid = true;
+            if (Mathf.Abs(currPos.x - newPos.x) != 1 &&  Mathf.Abs(currPos.y - newPos.y) != 1)
+            {
+                // Debug.Log($"Square {indexLeft} is invalid due to wrapping (from {index}) - x{Mathf.Abs(currPos.x - newPos.x)}, y{Mathf.Abs(newPos.y - newPos.y)}");
+                valid = false; 
+            }
+            if (valid && Utility.IsPiece(pieceLeft, Piece.Pawn) && Utility.IsColour(pieceLeft, enemyColour))
+            {
+                // Debug.Log($"Square {index} is attacked by a top left pawn");
+                Debug.Log($"{indexLeft}-LP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
+                return true;
+            }
+        }
+        int indexRight = (colour == Colour.White) ? (index + 9) : (index - 7);
+        if (IsValidIndex(indexRight))
+        {
+            byte pieceRight = Board.PieceCodeAtIndex(indexRight);
+            newPos = Utility.BoardIndexToWorldPos(indexRight);
+            bool valid = true;
+            if (Mathf.Abs(currPos.x - newPos.x) != 1 && Mathf.Abs(newPos.y - newPos.y) != 1)
+            {
+                // Debug.Log($"Square {indexLeft} is invalid due to wrapping (from {index}) - x{Mathf.Abs(currPos.x - newPos.x)}, y{Mathf.Abs(newPos.y - newPos.y)}");
+                valid = false;
+            }
+            if (valid && Utility.IsPiece(pieceRight, Piece.Pawn) && Utility.IsColour(pieceRight, enemyColour))
+            {
+                // Debug.Log($"Square {index} is attacked by a top right pawn");
+                Debug.Log($"{indexLeft}-RP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
+                return true;
+            }
+        }
+        #endregion
+        #region ROOK_CHECK
+        foreach (int[] dir in Rook)
+        {
+            foreach (int i in dir)
+            {
+                if (!IsValidIndex(index + i)) break; // Dir went off the board
+                byte targetCode = Board.PieceCodeAtIndex(index + i);
+                newPos = Utility.BoardIndexToWorldPos(index + i);
+                if (currPos.x != newPos.x && currPos.y != newPos.y)
+                    break; // resolves wrapping
+                if (Utility.IsNonePiece(targetCode))
+                    continue;
+                if (Utility.IsColour(targetCode, colour))
+                    break; //friendly piece protecting
+                if (Utility.IsPiece(targetCode, Piece.Rook) || Utility.IsPiece(targetCode, Piece.Queen))
+                {
+                    Debug.Log($"{index}-R/Q");
+                    return true;
+                }
+                break; // finish with this direction
+            }
+        }
+        #endregion
+        #region BISHOP_CHECK
+        foreach (int[] dir in Bishop)
+        {
+            foreach (int i in dir)
+            {
+                if (!IsValidIndex(index + i)) break; // Dir went off the board
+                byte targetCode = Board.PieceCodeAtIndex(index + i);
+                newPos = Utility.BoardIndexToWorldPos(index + i);
+                if (Mathf.Abs(newPos.x - currPos.x) != Mathf.Abs(newPos.y - currPos.y))
+                    break; // resolves wrapping
+                if (Utility.IsNonePiece(targetCode))
+                    continue;
+                if (Utility.IsColour(targetCode, colour))
+                    break; //friendly piece protecting
+                if (Utility.IsPiece(targetCode, Piece.Bishop) || Utility.IsPiece(targetCode, Piece.Queen))
+                {
+                    Debug.Log($"{index}-B/Q");
+                    return true;
+                }
+                break; // finish with this direction
+            }
+        }
+        #endregion
+        #region KNIGHT_CHECK
+        foreach (int i in Knight)
+        {
+            if (!IsValidIndex(index + i)) continue;
+            byte targetCode = Board.PieceCodeAtIndex(index + i);
+            newPos = Utility.BoardIndexToWorldPos(index + i);
+            float xDif = Mathf.Abs(newPos.x - currPos.x);
+            float yDif = Mathf.Abs(newPos.y - currPos.y);
+            bool valid = false;
+            if ((xDif == 2) && (yDif == 1))
+                valid = true;
+            else if ((xDif == 1) && (yDif == 2))
+                valid = true;
+            if (!valid)
+                continue;
+            if (Utility.IsPiece(targetCode, Piece.Knight) && Utility.IsColour(targetCode, enemyColour))
+            {
+                Debug.Log($"{index}-N");
+                return true;
+            }
+        }
+        #endregion
+        #region KING_CHECK
+        foreach (int i in King)
+        {
+            if (!IsValidIndex(index + i))
+                continue;
+            newPos = Utility.BoardIndexToWorldPos(index + i);
+            if (Mathf.Abs(newPos.x - currPos.x) > 1 || Mathf.Abs(newPos.y - currPos.y) > 1)
+                continue; // move wraps
+            byte targetCode = Board.PieceCodeAtIndex(index + i);
+            if (Utility.IsPiece(targetCode, Piece.King) && Utility.IsColour(targetCode, enemyColour))
+            {
+                Debug.Log($"{index}-K");
+                return true;
+            }
+        }
+        #endregion
+        return false;
     }
 }

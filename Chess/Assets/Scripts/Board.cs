@@ -53,28 +53,6 @@ public sealed class Board
         }
         BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
     }
-    public static List<int> GetAllMoves(Colour colour)
-    {
-        List<int> result = new();
-        foreach (GameObject obj in pieceObjs)
-        {
-            if (obj == null)
-                continue;
-            if (!obj.TryGetComponent(out Piece pc))
-                continue;
-            if (pc.colour == colour)
-            {
-                foreach (int move in pc.CalculateMoves(false))
-                {
-                    if (!result.Contains(move))
-                    {
-                        result.Add(move);
-                    }
-                }
-            }
-        }
-        return result;
-    }
     byte[] PositionFromFEN(string fen)
     {
         string resStr = string.Empty;

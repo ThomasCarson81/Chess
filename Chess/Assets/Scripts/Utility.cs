@@ -165,7 +165,11 @@ public static class Utility
     }
     public static string BoardIndexToNotation(int boardIndex)
     {
-        if (boardIndex < 0 || boardIndex > 63) return "";
+        if (boardIndex < 0 || boardIndex > 63)
+        {
+            Debug.Log("Invalid index provided to BoardIndexToNotation");
+            return "";
+        }
         int rankInt = boardIndex % 8;
         char rank = (char)(rankInt + 'a');
         char file = (char)((boardIndex - rankInt) / 8 + 1 + '0');
