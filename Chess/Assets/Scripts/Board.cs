@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using TMPro;
+using UnityEngine.Purchasing;
 
 public sealed class Board
 {
@@ -18,12 +19,10 @@ public sealed class Board
     public Board()
     {
         square = PositionFromFEN(startFEN);
-        GameObject obj;
         for (int i = 0; i < square.Length; i++)
         {
             if (Utility.IsNonePiece(square[i])) continue;
-            obj = InstantiatePiece(i, square[i]);
-            if (obj != null) pieceObjs.Add(obj);
+            pieceObjs.Add(InstantiatePiece(i, square[i]));
         }
     }
     public static GameObject InstantiatePiece(int boardIndex, byte pieceCode)
@@ -37,7 +36,6 @@ public sealed class Board
         script.pieceCode = pieceCode;
         script.colour = (Utility.ColourCode(pieceCode) == Piece.White) ? Colour.White : Colour.Black;
         script.boardIndex = boardIndex;
-        pieceObjs.Add(piece);
         return piece;
     }
     public static void AddMaterial(int material, Colour colour)
@@ -55,7 +53,7 @@ public sealed class Board
     }
     byte[] PositionFromFEN(string fen)
     {
-        string resStr = string.Empty;
+        //string resStr = string.Empty;
         byte[] result = new byte[64];
         string[] splitFEN = fen.Split("/");
         splitFEN[^1] = splitFEN[^1].Split(" ")[0];
@@ -63,16 +61,11 @@ public sealed class Board
         byte colour;
         byte pieceType;
         int skips;
+        int whiteKings = 0, blackKings = 0;
         foreach (string rank in splitFEN)
         {
             foreach (char c in rank.Reverse()) // indices decrease right to left, so flip the rank
             {
-                //while (skips >= 0)
-                //{
-                //    result[index] = Piece.None; // place no piece at this position
-                //    index--;
-                //    skips--;
-                //}
                 if (char.IsDigit(c))
                 {
                     //Debug.Log($"Skipping {c - '0'} times");
@@ -83,7 +76,7 @@ public sealed class Board
                         skips--;
                         index--;
                     }
-                    resStr += "skip ";
+                    //resStr += "skip ";
                     continue;
                 }
                 colour = char.IsUpper(c) ? Piece.White : Piece.Black; // UPPER = White, Lower = black
@@ -97,6 +90,10 @@ public sealed class Board
                     'q' => Piece.Queen,
                     _ => Piece.None // illegal character in FEN, just add no piece
                 };
+                if (colour == Piece.White && pieceType == Piece.King)
+                    whiteKings++;
+                else if (colour == Piece.Black && pieceType == Piece.King)
+                    blackKings++;
                 string s = char.ToLower(c) switch
                 {
                     'p' => "Pawn",
@@ -109,10 +106,12 @@ public sealed class Board
                 };
                 // place a piece with the specified colour at this position
                 result[index] = (byte)(pieceType | colour); 
-                resStr += s + " ";
+                //resStr += s + " ";
                 index--;
             }
         }
+        if (whiteKings != 1 || blackKings != 1)
+            Debug.LogError("Please use exactly 1 of each colour king");
         //Debug.Log($"FEN:\n{resStr}");
         //Debug.Log($"len(FEN)={result.Length}");
         return result;
@@ -129,13 +128,13 @@ public sealed class Board
         {
             if (obj == null)
             {
-                pieceObjs.Remove(obj);
-                return 0;
+                Debug.Log("pieceObjs contains null");
+                continue;
             }
-            Piece pc = obj.GetComponent<Piece>();
-            if (pc == null)
+            if (!obj.TryGetComponent<Piece>(out var pc))
             {
-                return 0;
+                Debug.Log("how tf does a piece not have a piece script??");
+                break;
             }
             if (pc.boardIndex == index)
             {
