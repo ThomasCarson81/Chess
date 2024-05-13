@@ -195,13 +195,11 @@ public static class MoveSets
             bool valid = true;
             if (Mathf.Abs(currPos.x - newPos.x) != 1 &&  Mathf.Abs(currPos.y - newPos.y) != 1)
             {
-                // Debug.Log($"Square {indexLeft} is invalid due to wrapping (from {index}) - x{Mathf.Abs(currPos.x - newPos.x)}, y{Mathf.Abs(newPos.y - newPos.y)}");
                 valid = false; 
             }
             if (valid && Utility.IsPiece(pieceLeft, Piece.Pawn) && Utility.IsColour(pieceLeft, enemyColour))
             {
-                // Debug.Log($"Square {index} is attacked by a top left pawn");
-                Debug.Log($"{indexLeft}-LP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
+                //Debug.Log($"{indexLeft}-LP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
                 return true;
             }
         }
@@ -213,13 +211,11 @@ public static class MoveSets
             bool valid = true;
             if (Mathf.Abs(currPos.x - newPos.x) != 1 && Mathf.Abs(newPos.y - newPos.y) != 1)
             {
-                // Debug.Log($"Square {indexLeft} is invalid due to wrapping (from {index}) - x{Mathf.Abs(currPos.x - newPos.x)}, y{Mathf.Abs(newPos.y - newPos.y)}");
                 valid = false;
             }
             if (valid && Utility.IsPiece(pieceRight, Piece.Pawn) && Utility.IsColour(pieceRight, enemyColour))
             {
-                // Debug.Log($"Square {index} is attacked by a top right pawn");
-                Debug.Log($"{indexLeft}-RP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
+                //Debug.Log($"{indexLeft}-RP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
                 return true;
             }
         }
@@ -240,7 +236,7 @@ public static class MoveSets
                     break; //friendly piece protecting
                 if (Utility.IsPiece(targetCode, Piece.Rook) || Utility.IsPiece(targetCode, Piece.Queen))
                 {
-                    Debug.Log($"{index}-R/Q");
+                    //Debug.Log($"{index}-R/Q");
                     return true;
                 }
                 break; // finish with this direction
@@ -263,7 +259,7 @@ public static class MoveSets
                     break; //friendly piece protecting
                 if (Utility.IsPiece(targetCode, Piece.Bishop) || Utility.IsPiece(targetCode, Piece.Queen))
                 {
-                    Debug.Log($"{index}-B/Q");
+                    //Debug.Log($"{index}-B/Q");
                     return true;
                 }
                 break; // finish with this direction
@@ -287,7 +283,7 @@ public static class MoveSets
                 continue;
             if (Utility.IsPiece(targetCode, Piece.Knight) && Utility.IsColour(targetCode, enemyColour))
             {
-                Debug.Log($"{index}-N");
+                //Debug.Log($"{index}-N");
                 return true;
             }
         }
@@ -303,7 +299,7 @@ public static class MoveSets
             byte targetCode = Board.PieceCodeAtIndex(index + i);
             if (Utility.IsPiece(targetCode, Piece.King) && Utility.IsColour(targetCode, enemyColour))
             {
-                Debug.Log($"{index}-K");
+                //Debug.Log($"{index}-K");
                 return true;
             }
         }
