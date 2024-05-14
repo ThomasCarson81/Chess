@@ -98,16 +98,14 @@ public class Piece : MonoBehaviour
         {
             if (IsColour(White))
             {
-                //Debug.Log("white king moved");
                 Board.whiteKingIndex = boardIndex;
             }
             else
             {
-                //Debug.Log("black king moved");
                 Board.blackKingIndex = boardIndex;
             }
         }
-        if (x != prevX || y != prevY) // if it actually moved
+        if ((x != prevX || y != prevY) && doEnPassant) // if it actually moved and En Passant is accounted for
         {
             if (BoardManager.Instance.enPassentPiece != null)
             {
@@ -144,26 +142,6 @@ public class Piece : MonoBehaviour
             Queen => MoveSets.CalculateQueenMoves(boardIndex, colour),
             _ => new(),
         };
-        //bool kingInCheck = false;
-        //if (colour == Colour.White)
-        //{
-        //    if (MoveSets.IsAttacked(Board.whiteKingIndex, colour))
-        //    {
-        //        kingInCheck = true;
-        //    }
-        //}
-        //else
-        //{
-        //    if (MoveSets.IsAttacked(Board.blackKingIndex, colour))
-        //    {
-        //        kingInCheck = true;
-        //    }
-        //}
-        //if (!kingInCheck)
-        //{
-        //    return movesPreFilter;
-        //}
-        //Debug.Log("king in check");
         List<int> movesPostFilter = new();
         foreach (int move in movesPreFilter)
         {
@@ -247,7 +225,9 @@ public class Piece : MonoBehaviour
             return;
 
         if (!Utility.IsNonePiece(targetSquareCode)) // if it's a capture
+        { 
             Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode, x, y);
+        }
         else if (Utility.IsPiece(targetSquareCode, EnPassant) && IsPiece(Pawn))
         {
             // if it's an En Passant capture
