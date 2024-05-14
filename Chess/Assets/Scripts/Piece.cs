@@ -115,6 +115,7 @@ public class Piece : MonoBehaviour
                 (byte)(Utility.ColourCode(pieceCode) | EnPassant)
             );
             BoardManager.Instance.enPassentPiece.name = "En Passent";
+            Board.pieceObjs.Add(BoardManager.Instance.enPassentPiece);
         }
     }
     public List<int> CalculateMoves(bool checkForChecks)
