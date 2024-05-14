@@ -308,4 +308,32 @@ public static class MoveSets
         #endregion
         return false;
     }
+    public static bool ProtectsCheck(int from, int to, Colour colour, GameObject movingPieceObj)
+    {
+        if (!IsValidIndex(from))
+        {
+            Debug.Log("Invalid from index in ProtectsCheck");
+            return false;
+        }
+        if (!IsValidIndex(to))
+        {
+            Debug.Log("Invalid to index in ProtectsCheck");
+            return false;
+        }
+        bool protects;
+        Vector3 posFrom = Utility.BoardIndexToWorldPos(from);
+        Vector3 posTo = Utility.BoardIndexToWorldPos(to);
+        if (!movingPieceObj.TryGetComponent(out Piece movingPiece))
+        {
+            Debug.Log("Invalid from index in ProtectsCheck");
+            return false;
+        }
+        //byte movingPieceCode = movingPiece.pieceCode;
+        //int kingIndexPreMove = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
+        movingPiece.Move(posTo.x, posTo.y, false, false, posFrom.x, posFrom.y, false);
+        int kingIndex = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
+        protects = !IsAttacked(kingIndex, colour);
+        movingPiece.Move(posFrom.x, posFrom.y, false, false, posTo.x, posTo.y, false);
+        return protects;
+    }
 }

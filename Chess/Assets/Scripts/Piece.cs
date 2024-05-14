@@ -88,10 +88,11 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPickedUp(pieceCode);
     }
-    void Move(float x, float y, bool updateHasMoved, float prevX, float prevY)
+    public void Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant)
     {
         transform.position = new Vector3(x, y, 0);
-        pieceCode ^= (byte)(pieceCode & PickedUp);
+        if (updatePickedUp)
+            pieceCode ^= (byte)(pieceCode & PickedUp);
         boardIndex = Utility.WorldPosToBoardIndex(x, y);
         if (IsPiece(King))
         {
@@ -117,7 +118,7 @@ public class Piece : MonoBehaviour
         }
         if (updateHasMoved)
             pieceCode |= HasMoved;
-        if (!IsPiece(Pawn))
+        if (!IsPiece(Pawn) || !doEnPassant)
             return;
         if (Mathf.Abs(y-prevY) >= 2)
         {
@@ -133,7 +134,7 @@ public class Piece : MonoBehaviour
     }
     public List<int> CalculateMoves(bool checkForChecks)
     {
-        return Utility.TypeCode(pieceCode) switch
+        List<int> movesPreFilter = Utility.TypeCode(pieceCode) switch
         {
             Pawn => MoveSets.CalculatePawnMoves(boardIndex, colour, HasPieceMoved()),
             Knight => MoveSets.CalculateKnightMoves(boardIndex, colour),
@@ -143,10 +144,44 @@ public class Piece : MonoBehaviour
             Queen => MoveSets.CalculateQueenMoves(boardIndex, colour),
             _ => new(),
         };
+        //bool kingInCheck = false;
+        //if (colour == Colour.White)
+        //{
+        //    if (MoveSets.IsAttacked(Board.whiteKingIndex, colour))
+        //    {
+        //        kingInCheck = true;
+        //    }
+        //}
+        //else
+        //{
+        //    if (MoveSets.IsAttacked(Board.blackKingIndex, colour))
+        //    {
+        //        kingInCheck = true;
+        //    }
+        //}
+        //if (!kingInCheck)
+        //{
+        //    return movesPreFilter;
+        //}
+        //Debug.Log("king in check");
+        List<int> movesPostFilter = new();
+        foreach (int move in movesPreFilter)
+        {
+            if (MoveSets.ProtectsCheck(boardIndex, move, colour, gameObject))
+            {
+                //Debug.Log($"{move} protects.");
+                movesPostFilter.Add(move);
+            }
+            else
+            {
+                //Debug.Log($"{move} does not protect.");
+            }
+        }
+        return movesPostFilter;
     } 
     private void Capture(GameObject enemyObj, byte enemyCode, float x, float y)
     {
-        Move(x, y, true, prevX, prevY);
+        Move(x, y, true, true, prevX, prevY, true);
         Board.ChangeTurn();
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
         Board.pieceObjs.Remove(enemyObj);
@@ -196,7 +231,7 @@ public class Piece : MonoBehaviour
         // if the target square is the square the piece is on (didn't move)
         if (x == prevX && y == prevY)
         {
-            Move(x, y, false, prevX, prevY);
+            Move(x, y, false, true, prevX, prevY, true);
             Board.UnRenderMoveDots();
             return;
         }
@@ -221,7 +256,7 @@ public class Piece : MonoBehaviour
         }
         else
         {
-            Move(x, y, true, prevX, prevY);
+            Move(x, y, true, true, prevX, prevY, true);
             Board.ChangeTurn();
             int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
             Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
