@@ -23,6 +23,9 @@ public class BoardManager : MonoBehaviour
     public GameObject enPassentPiece;
     public AudioSource moveSound;
     public AudioSource captureSound;
+    public AudioSource checkSound;
+    public AudioSource castleSound;
+    public AudioSource promoteSound;
     void Awake()
     {
         if (Instance == null)
