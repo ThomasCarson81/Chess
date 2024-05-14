@@ -15,6 +15,7 @@ public sealed class Board
     public static int whiteMaterial = 0;
     public static Colour turn = Colour.White;
     public static List<GameObject> moveDots = new();
+    public static int whiteKingIndex, blackKingIndex;
 
     public Board()
     {
@@ -36,6 +37,13 @@ public sealed class Board
         script.pieceCode = pieceCode;
         script.colour = (Utility.ColourCode(pieceCode) == Piece.White) ? Colour.White : Colour.Black;
         script.boardIndex = boardIndex;
+        if (script.IsPiece(Piece.King))
+        {
+            if (script.IsColour(Piece.White))
+                whiteKingIndex = boardIndex;
+            else
+                blackKingIndex = boardIndex;
+        }
         return piece;
     }
     public static void AddMaterial(int material, Colour colour)

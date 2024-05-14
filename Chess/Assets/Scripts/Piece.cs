@@ -93,6 +93,19 @@ public class Piece : MonoBehaviour
         transform.position = new Vector3(x, y, 0);
         pieceCode ^= (byte)(pieceCode & PickedUp);
         boardIndex = Utility.WorldPosToBoardIndex(x, y);
+        if (IsPiece(King))
+        {
+            if (IsColour(White))
+            {
+                //Debug.Log("white king moved");
+                Board.whiteKingIndex = boardIndex;
+            }
+            else
+            {
+                //Debug.Log("black king moved");
+                Board.blackKingIndex = boardIndex;
+            }
+        }
         if (x != prevX || y != prevY) // if it actually moved
         {
             if (BoardManager.Instance.enPassentPiece != null)
@@ -131,12 +144,34 @@ public class Piece : MonoBehaviour
             _ => new(),
         };
     } 
-    private void Capture(GameObject enemyObj, byte enemyCode)
+    private void Capture(GameObject enemyObj, byte enemyCode, float x, float y)
     {
+        Move(x, y, true, prevX, prevY);
+        Board.ChangeTurn();
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
         Board.pieceObjs.Remove(enemyObj);
         Destroy(enemyObj);
-        BoardManager.Instance.captureSound.Play();
+        int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
+        Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
+        if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
+        {
+            //if (colour == Colour.Black)
+            //{
+            //    Debug.Log($"white king in check! (i{enemyKingIndex}) after capture");
+            //    Debug.Log($"white={Board.whiteKingIndex}, black={Board.blackKingIndex}");
+            //}
+            //else
+            //{
+            //    Debug.Log($"black king in check! (i{enemyKingIndex}) after capture");
+            //    Debug.Log($"white={Board.whiteKingIndex}, black={Board.blackKingIndex}");
+            //}
+            BoardManager.Instance.checkSound.Play();
+        }
+        else
+        {
+            BoardManager.Instance.captureSound.Play();
+        }
+        
     }
     private void PickUp()
     {
@@ -177,17 +212,36 @@ public class Piece : MonoBehaviour
             return;
 
         if (!Utility.IsNonePiece(targetSquareCode)) // if it's a capture
-            Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode);
+            Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode, x, y);
         else if (Utility.IsPiece(targetSquareCode, EnPassant) && IsPiece(Pawn))
         {
             // if it's an En Passant capture
             float enemyY = (colour == Colour.Black) ? y + 1 : y - 1;
-            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode);
+            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode, x, y);
         }
         else
-            BoardManager.Instance.moveSound.Play();
-
-        Move(x, y, true, prevX, prevY);
-        Board.ChangeTurn();
+        {
+            Move(x, y, true, prevX, prevY);
+            Board.ChangeTurn();
+            int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
+            Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
+            if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
+            {
+                //if (colour == Colour.Black)
+                //{
+                //    Debug.Log($"white king in check! (i{enemyKingIndex})");
+                //}
+                //else
+                //{
+                //    Debug.Log($"black king in check! (i{enemyKingIndex})");
+                //}
+                BoardManager.Instance.checkSound.Play();
+            }
+            else
+            {
+                BoardManager.Instance.moveSound.Play();
+            }
+        }
+        
     }
 }
