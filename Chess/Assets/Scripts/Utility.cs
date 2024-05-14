@@ -79,7 +79,7 @@ public static class Utility
          */
         return (pieceCode & Piece.HasMoved) > 0;
     }
-    public static bool IsPiece(byte currentCode, byte questionCode)
+    public static bool IsPiece(byte pieceCode, byte questionCode)
     {
         /* Explanation
          * 00001011 (a white knight which hasn't moved) Bitwise AND'd with
@@ -87,7 +87,7 @@ public static class Utility
          * 00000011
          * they are equal, so it is true
          */
-        return (currentCode & questionCode) == questionCode;
+        return (pieceCode & 7) == questionCode;
     }
     public static Vector3 BoardIndexToWorldPos(int boardIndex)
     {
