@@ -30,7 +30,7 @@ public class Piece : MonoBehaviour
     #endregion
 
     public byte pieceCode;
-    SpriteRenderer sr;
+    public SpriteRenderer sr;
     float prevX = 0;
     float prevY = 0;
     public Colour colour;
@@ -50,7 +50,7 @@ public class Piece : MonoBehaviour
             transform.position = pos;
         }
     }
-    Sprite GetSpriteFromPieceCode(byte pieceCode)
+    public Sprite GetSpriteFromPieceCode(byte pieceCode)
     {
         return pieceCode switch
         {
@@ -178,6 +178,11 @@ public class Piece : MonoBehaviour
             Board.square[BoardManager.Instance.enPassantIndex] = epCode;
             BoardManager.Instance.enPassentPiece.name = "En Passent";
             Board.pieceObjs.Add(BoardManager.Instance.enPassentPiece);
+        }
+        else if (boardIndex > 55 ||  boardIndex < 8)
+        {
+            BoardManager.Instance.promotingPiece = this;
+            BoardManager.Instance.DisplayButtons();
         }
         if (doPrint)
             Board.PrintBoard(Board.square);
