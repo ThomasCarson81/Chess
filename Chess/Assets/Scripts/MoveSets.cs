@@ -34,27 +34,6 @@ public static class MoveSets
     };
 
     /// <summary>
-    /// Checks if the given index is valid to be used on the board array
-    /// </summary>
-    /// <param name="index">The index to be checked</param>
-    /// <returns>True if the index is safe to use, otherwise false</returns>
-    public static bool IsValidIndex(int index)
-    {
-        return index >= 0 && index < 64;
-    }
-
-    /// <summary>
-    /// Checks if a given piece code is either a None piece, or an enemy to the given colour
-    /// </summary>
-    /// <param name="piece">The piece code to be checked</param>
-    /// <param name="friendlyColour">The colour of the friendly pieces</param>
-    /// <returns>True if the piece is None or an enemy to the given colour, otherwise false</returns>
-    static bool IsNoneOrEnemy(byte piece, Colour friendlyColour)
-    {
-        return Utility.IsNonePiece(piece) || (!Utility.IsColour(piece, friendlyColour) && !Utility.IsPiece(piece, Piece.EnPassant));
-    }
-
-    /// <summary>
     /// Calculates the moves a Pawn can make.<br/>
     /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
     /// </summary>
@@ -66,7 +45,7 @@ public static class MoveSets
     {
         List<int> result = new();
         int indexTopLeft = (colour == Colour.White) ? (currentIndex + 7) : (currentIndex - 9);
-        if (IsValidIndex(indexTopLeft))
+        if (Utility.IsValidIndex(indexTopLeft))
         {
             byte pieceTopLeft = Board.square[indexTopLeft];
             if ((!Utility.IsNonePiece(pieceTopLeft) || Utility.IsPiece(pieceTopLeft, Piece.EnPassant)) && !Utility.IsColour(pieceTopLeft, colour))
@@ -75,7 +54,7 @@ public static class MoveSets
             }
         }
         int indexTopRight = (colour == Colour.White) ? (currentIndex + 9) : (currentIndex - 7);
-        if (IsValidIndex(indexTopRight))
+        if (Utility.IsValidIndex(indexTopRight))
         {
             byte pieceTopRight = Board.square[indexTopRight];
             if ((!Utility.IsNonePiece(pieceTopRight) || Utility.IsPiece(pieceTopRight, Piece.EnPassant))
@@ -83,7 +62,7 @@ public static class MoveSets
                 result.Add(indexTopRight);
         }
         int index1Forward = (colour == Colour.White) ? (currentIndex + 8) : (currentIndex - 8);
-        if (IsValidIndex(index1Forward))
+        if (Utility.IsValidIndex(index1Forward))
         {
             byte piece1Forward = Board.square[index1Forward];
             if (!Utility.IsNonePiece(piece1Forward))
@@ -93,7 +72,7 @@ public static class MoveSets
         if (hasMoved)
             return result;
         int index2Forward = (colour == Colour.White) ? (currentIndex + 16) : (currentIndex - 16);
-        if (IsValidIndex(index2Forward))
+        if (Utility.IsValidIndex(index2Forward))
         {
             byte piece2Forward = Board.square[index2Forward];
             if (Utility.IsNonePiece(piece2Forward))
@@ -114,7 +93,7 @@ public static class MoveSets
         List<int> result = new();
         foreach (int i in Knight)
         {
-            if (!IsValidIndex(currentIndex + i)) continue;
+            if (!Utility.IsValidIndex(currentIndex + i)) continue;
             byte targetCode = Board.square[currentIndex + i];
             Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
             Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
@@ -127,7 +106,7 @@ public static class MoveSets
                 valid = true;
             if (!valid)
                 continue;
-            if (IsNoneOrEnemy(targetCode, colour))
+            if (Utility.IsNoneOrEnemy(targetCode, colour))
                 result.Add(currentIndex + i);
         }
         return result;
@@ -147,7 +126,7 @@ public static class MoveSets
         // hasMoved will be used for castling
         foreach (int i in King)
         {
-            if (!IsValidIndex(currentIndex + i))
+            if (!Utility.IsValidIndex(currentIndex + i))
                 continue;
             Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
             Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
@@ -156,7 +135,7 @@ public static class MoveSets
             byte targetCode = Board.square[currentIndex + i];
             if (IsAttacked(currentIndex + i, colour))
                 continue; // unable to move into check
-            if (IsNoneOrEnemy(targetCode, colour))
+            if (Utility.IsNoneOrEnemy(targetCode, colour))
                 result.Add(currentIndex + i);
         }
         return result;
@@ -176,7 +155,7 @@ public static class MoveSets
         {
             foreach (int i in dir)
             {
-                if (!IsValidIndex(currentIndex + i)) break; // Dir went off the board
+                if (!Utility.IsValidIndex(currentIndex + i)) break; // Dir went off the board
                 byte targetCode = Board.square[currentIndex + i];
                 Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
                 Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
@@ -209,7 +188,7 @@ public static class MoveSets
         {
             foreach (int i in dir)
             {
-                if (!IsValidIndex(currentIndex + i)) break; // Dir went off the board
+                if (!Utility.IsValidIndex(currentIndex + i)) break; // Dir went off the board
                 byte targetCode = Board.square[currentIndex + i];
                 Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
                 Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
@@ -270,7 +249,7 @@ public static class MoveSets
         Vector2 newPos;
         #region PAWN_CHECK
         int indexLeft = (colour == Colour.White) ? (index + 7) : (index - 9);
-        if (IsValidIndex(indexLeft))
+        if (Utility.IsValidIndex(indexLeft))
         {
             byte pieceLeft = boardPosition[indexLeft];
             newPos = Utility.BoardIndexToWorldPos(indexLeft);
@@ -286,7 +265,7 @@ public static class MoveSets
             }
         }
         int indexRight = (colour == Colour.White) ? (index + 9) : (index - 7);
-        if (IsValidIndex(indexRight))
+        if (Utility.IsValidIndex(indexRight))
         {
             byte pieceRight = boardPosition[indexRight];
             newPos = Utility.BoardIndexToWorldPos(indexRight);
@@ -307,7 +286,7 @@ public static class MoveSets
         {
             foreach (int i in dir)
             {
-                if (!IsValidIndex(index + i)) break; // Dir went off the board
+                if (!Utility.IsValidIndex(index + i)) break; // Dir went off the board
                 byte targetCode = boardPosition[index + i];
                 newPos = Utility.BoardIndexToWorldPos(index + i);
                 if (currPos.x != newPos.x && currPos.y != newPos.y)
@@ -330,7 +309,7 @@ public static class MoveSets
         {
             foreach (int i in dir)
             {
-                if (!IsValidIndex(index + i)) break; // Dir went off the board
+                if (!Utility.IsValidIndex(index + i)) break; // Dir went off the board
                 byte targetCode = boardPosition[index + i];
                 newPos = Utility.BoardIndexToWorldPos(index + i);
                 if (Mathf.Abs(newPos.x - currPos.x) != Mathf.Abs(newPos.y - currPos.y))
@@ -351,7 +330,7 @@ public static class MoveSets
         #region KNIGHT_CHECK
         foreach (int i in Knight)
         {
-            if (!IsValidIndex(index + i)) continue;
+            if (!Utility.IsValidIndex(index + i)) continue;
             byte targetCode = boardPosition[index + i];
             newPos = Utility.BoardIndexToWorldPos(index + i);
             float xDif = Mathf.Abs(newPos.x - currPos.x);
@@ -373,7 +352,7 @@ public static class MoveSets
         #region KING_CHECK
         foreach (int i in King)
         {
-            if (!IsValidIndex(index + i))
+            if (!Utility.IsValidIndex(index + i))
                 continue;
             newPos = Utility.BoardIndexToWorldPos(index + i);
             if (Mathf.Abs(newPos.x - currPos.x) > 1 || Mathf.Abs(newPos.y - currPos.y) > 1)
@@ -398,12 +377,12 @@ public static class MoveSets
     /// <returns>True if the move is safe to play, otherwise false (the move does not protect your king, or puts it in check)</returns>
     public static bool ProtectsCheck(int from, int to, Colour colour)
     {
-        if (!IsValidIndex(from))
+        if (!Utility.IsValidIndex(from))
         {
             Debug.Log("Invalid from index in ProtectsCheck");
             return false;
         }
-        if (!IsValidIndex(to))
+        if (!Utility.IsValidIndex(to))
         {
             Debug.Log("Invalid to index in ProtectsCheck");
             return false;

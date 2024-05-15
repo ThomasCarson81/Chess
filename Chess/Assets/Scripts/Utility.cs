@@ -421,4 +421,25 @@ public static class Utility
         };
         return material;
     }
+
+    /// <summary>
+    /// Checks if the given index is valid to be used on the board array
+    /// </summary>
+    /// <param name="index">The index to be checked</param>
+    /// <returns>True if the index is safe to use, otherwise false</returns>
+    public static bool IsValidIndex(int index)
+    {
+        return index >= 0 && index < 64;
+    }
+
+    /// <summary>
+    /// Checks if a given piece code is either a None piece, or an enemy to the given colour
+    /// </summary>
+    /// <param name="piece">The piece code to be checked</param>
+    /// <param name="friendlyColour">The colour of the friendly pieces</param>
+    /// <returns>True if the piece is None or an enemy to the given colour, otherwise false</returns>
+    public static bool IsNoneOrEnemy(byte piece, Colour friendlyColour)
+    {
+        return Utility.IsNonePiece(piece) || (!Utility.IsColour(piece, friendlyColour) && !Utility.IsPiece(piece, Piece.EnPassant));
+    }
 }

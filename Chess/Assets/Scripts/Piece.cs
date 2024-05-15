@@ -226,6 +226,7 @@ public class Piece : MonoBehaviour
     private void Capture(GameObject enemyObj, byte enemyCode, int enemyIndex, float x, float y)
     {
         if (MoveSets.IsValidIndex(enemyIndex))
+        if (Utility.IsValidIndex(enemyIndex))
         {
             Board.square[enemyIndex] = None;
         }
