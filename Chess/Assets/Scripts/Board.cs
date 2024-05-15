@@ -26,6 +26,13 @@ public sealed class Board
             pieceObjs.Add(InstantiatePiece(i, square[i]));
         }
     }
+
+    /// <summary>
+    /// Instantiate a piece GameObject with a script attached
+    /// </summary>
+    /// <param name="boardIndex">The index at which to place the new piece</param>
+    /// <param name="pieceCode">The piece code of the new piece</param>
+    /// <returns>The instantiated GameObject</returns>
     public static GameObject InstantiatePiece(int boardIndex, byte pieceCode)
     {
         //if (Utility.IsNonePiece(square[boardIndex])) return null;
@@ -46,6 +53,12 @@ public sealed class Board
         }
         return piece;
     }
+
+    /// <summary>
+    /// Add materials points to a player
+    /// </summary>
+    /// <param name="material">The number of points to add</param>
+    /// <param name="colour">The player to add it to</param>
     public static void AddMaterial(int material, Colour colour)
     {
         switch (colour)
@@ -59,6 +72,12 @@ public sealed class Board
         }
         BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
     }
+
+    /// <summary>
+    /// Get a byte-array of a board position from chess FEN notation
+    /// </summary>
+    /// <param name="fen">the string of the FEN notation</param>
+    /// <returns>The corresponding board position</returns>
     byte[] PositionFromFEN(string fen)
     {
         //string resStr = string.Empty;
@@ -124,12 +143,21 @@ public sealed class Board
         //Debug.Log($"len(FEN)={result.Length}");
         return result;
     }
+
+    /// <summary>
+    /// Change the turn of the game and update the UI
+    /// </summary>
     public static void ChangeTurn()
     {
         turn = (turn == Colour.White) ? Colour.Black : Colour.White;
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
     }
+
+    /// <summary>
+    /// Render dots on the squares provided
+    /// </summary>
+    /// <param name="moves">A list of board indexes to render dots on</param>
     public static void RenderMoveDots(List<int> moves)
     {
         UnRenderMoveDots();
@@ -141,6 +169,10 @@ public sealed class Board
             moveDots.Add(dot);
         }
     }
+
+    /// <summary>
+    /// Hide the dots rendered by RenderMoveDots()
+    /// </summary>
     public static void UnRenderMoveDots()
     {
         foreach (GameObject gameObject in moveDots)
@@ -149,25 +181,32 @@ public sealed class Board
         }
         moveDots.Clear();
     }
+
+    /// <summary>
+    /// Debug.Log() a given board position in both string representation
+    /// </summary>
+    /// <param name="boardPosition"></param>
     public static void PrintBoard(byte[] boardPosition)
     {
         string resStr1 = "\n";
-        string resStr2 = "\n";
         for (int i = 56; i >= 0 ; i++)
         {
             resStr1 += Utility.PieceCodeToString(boardPosition[i]) + " ";
-            if (boardPosition[i] < 10) resStr2 += "0" + boardPosition[i].ToString() + " ";
-            else resStr2 += boardPosition[i].ToString() + " ";
             if (i % 8 == 7)
             {
                 i -= 16;
                 resStr1 += "\n";
-                resStr2 += "\n";
             }
         }
         Debug.Log(resStr1);
-        Debug.Log(resStr2);
     }
+    
+    /// <summary>
+    /// Find the index of the first occurrence of a given piece code in a given position
+    /// </summary>
+    /// <param name="pieceCode">The piece code to be searched for</param>
+    /// <param name="boardPosition">The board position to be searched</param>
+    /// <returns>The index of the first occurrence of the piece code</returns>
     public static int FindPiece(byte pieceCode, byte[] boardPosition)
     {
         for (int i = 0; i < boardPosition.Length; i++)

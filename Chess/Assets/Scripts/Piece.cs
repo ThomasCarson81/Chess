@@ -71,22 +71,56 @@ public class Piece : MonoBehaviour
             _ => BoardManager.Instance.errorSprite // in case of an error, show a red dot
         };
     }
+
+    /// <summary>
+    /// Invokes Utility.IsColour() on this piece
+    /// </summary>
+    /// <param name="colour">The colour <b>code</b> to be checked against</param>
+    /// <returns>True if the piece is the same colour, otherwise false</returns>
     public bool IsColour(byte colour)
     {
         return Utility.IsColour(pieceCode, colour);
     }
+
+    /// <summary>
+    /// Invokes Utility.HasMoved() on this piece
+    /// </summary>
+    /// <returns>True if the piece has moved, otherwise false</returns>
     public bool HasPieceMoved()
     {
         return Utility.HasMoved(pieceCode);
     }
+
+    /// <summary>
+    /// Invokes Utility.IsPiece() on this piece
+    /// </summary>
+    /// <param name="pieceCode">The code of the piece to be checked for</param>
+    /// <returns>True if the piece is a match, otherwise false</returns>
     public bool IsPiece(byte pieceCode)
     {
         return Utility.IsPiece(this.pieceCode, pieceCode);
     }
+
+    /// <summary>
+    /// Invokes Utility.IsPickedUp on this piece
+    /// </summary>
+    /// <returns>True if the piece is picked up, otherwise false</returns>
     public bool IsPickedUp()
     {
         return Utility.IsPickedUp(pieceCode);
     }
+
+    /// <summary>
+    /// Move this piece in both world space and in the Board.square array
+    /// </summary>
+    /// <param name="x">The x position in world space to be moved to</param>
+    /// <param name="y">The y position in world space to be moved to</param>
+    /// <param name="updateHasMoved">Whether or not to update the 'HasMoved' property of the piece</param>
+    /// <param name="updatePickedUp">Whether or not to update the 'PickedUp' property of the piece</param>
+    /// <param name="prevX">The previous x position in world space of the piece</param>
+    /// <param name="prevY">The previous y position in world space of the piece</param>
+    /// <param name="doEnPassant">Whether or not to account for En Passant in the move</param>
+    /// <param name="doPrint">Whether or not to Debug.Log() the board position after the move</param>
     public void Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant, bool doPrint)
     {
         transform.position = new Vector3(x, y, 0);
@@ -148,13 +182,18 @@ public class Piece : MonoBehaviour
         if (doPrint)
             Board.PrintBoard(Board.square);
     }
-    public List<int> CalculateMoves(bool checkForChecks)
+
+    /// <summary>
+    /// Invokes the corresponding move calculator from MoveSets.cs and filters out unsafe moves
+    /// </summary>
+    /// <returns>A List of all the possible moves</returns>
+    public List<int> CalculateMoves()
     {
         List<int> movesPreFilter = Utility.TypeCode(pieceCode) switch
         {
             Pawn => MoveSets.CalculatePawnMoves(boardIndex, colour, HasPieceMoved()),
             Knight => MoveSets.CalculateKnightMoves(boardIndex, colour),
-            King => MoveSets.CalculateKingMoves(boardIndex, colour, HasPieceMoved(), checkForChecks),
+            King => MoveSets.CalculateKingMoves(boardIndex, colour, HasPieceMoved()),
             Bishop => MoveSets.CalculateBishopMoves(boardIndex, colour),
             Rook => MoveSets.CalculateRookMoves(boardIndex, colour),
             Queen => MoveSets.CalculateQueenMoves(boardIndex, colour),
@@ -163,7 +202,7 @@ public class Piece : MonoBehaviour
         List<int> movesPostFilter = new();
         foreach (int move in movesPreFilter)
         {
-            if (MoveSets.ProtectsCheck(boardIndex, move, colour, gameObject))
+            if (MoveSets.ProtectsCheck(boardIndex, move, colour))
             {
                 //Debug.Log($"{move} protects.");
                 movesPostFilter.Add(move);
@@ -174,7 +213,16 @@ public class Piece : MonoBehaviour
             }
         }
         return movesPostFilter;
-    } 
+    }
+
+    /// <summary>
+    /// Capture a given enemy piece
+    /// </summary>
+    /// <param name="enemyObj">The GameObject of the piece to be captured</param>
+    /// <param name="enemyCode">The piece code of the piece to be captured</param>
+    /// <param name="enemyIndex">The board index of the piece to be captured</param>
+    /// <param name="x">The x position in Unity world space to move to after the opponent has been captured</param>
+    /// <param name="y">The y position in Unity world space to move to after the opponent has been captured</param>
     private void Capture(GameObject enemyObj, byte enemyCode, int enemyIndex, float x, float y)
     {
         if (MoveSets.IsValidIndex(enemyIndex))
@@ -208,14 +256,19 @@ public class Piece : MonoBehaviour
         }
         
     }
+
+    /// <summary>
+    /// Pick up this piece, causing it to follow the mouse cursor and render dots on possible moves
+    /// </summary>
     private void PickUp()
     {
         pieceCode |= PickedUp;
         prevX = transform.position.x;
         prevY = transform.position.y;
-        legalMoves = CalculateMoves(true);
+        legalMoves = CalculateMoves();
         Board.RenderMoveDots(legalMoves);
     }
+
     private void OnMouseDown()
     {
         if (Board.turn != colour) // it's not your turn

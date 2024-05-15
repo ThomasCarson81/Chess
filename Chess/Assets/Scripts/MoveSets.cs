@@ -32,14 +32,36 @@ public static class MoveSets
         new int[] {7, 14, 21, 28, 35, 42, 49 },
         new int[] {-7, -14, -21, -28, -35, -42, -49 }
     };
+
+    /// <summary>
+    /// Checks if the given index is valid to be used on the board array
+    /// </summary>
+    /// <param name="index">The index to be checked</param>
+    /// <returns>True if the index is safe to use, otherwise false</returns>
     public static bool IsValidIndex(int index)
     {
         return index >= 0 && index < 64;
     }
+
+    /// <summary>
+    /// Checks if a given piece code is either a None piece, or an enemy to the given colour
+    /// </summary>
+    /// <param name="piece">The piece code to be checked</param>
+    /// <param name="friendlyColour">The colour of the friendly pieces</param>
+    /// <returns>True if the piece is None or an enemy to the given colour, otherwise false</returns>
     static bool IsNoneOrEnemy(byte piece, Colour friendlyColour)
     {
         return Utility.IsNonePiece(piece) || (!Utility.IsColour(piece, friendlyColour) && !Utility.IsPiece(piece, Piece.EnPassant));
     }
+
+    /// <summary>
+    /// Calculates the moves a Pawn can make.<br/>
+    /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
+    /// </summary>
+    /// <param name="currentIndex">The index of the Pawn</param>
+    /// <param name="colour">The colour of the Pawn</param>
+    /// <param name="hasMoved">Whether or not the Pawn has moved before, so it can move 2 squares if it hasn't</param>
+    /// <returns>A List of all the possible moves</returns>
     public static List<int> CalculatePawnMoves(int currentIndex, Colour colour, bool hasMoved)
     {
         List<int> result = new();
@@ -79,6 +101,14 @@ public static class MoveSets
         }
         return result;
     }
+
+    /// <summary>
+    /// Calculates the moves a Knight can make.<br/>
+    /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
+    /// </summary>
+    /// <param name="currentIndex">The index of the Knight</param>
+    /// <param name="colour">The colour of the Knight</param>
+    /// <returns>A List of all the possible moves</returns>
     public static List<int> CalculateKnightMoves(int currentIndex, Colour colour)
     {
         List<int> result = new();
@@ -102,7 +132,16 @@ public static class MoveSets
         }
         return result;
     }
-    public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved, bool checkForCheck)
+
+    /// <summary>
+    /// Calculates the moves a King can make.<br/>
+    /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
+    /// </summary>
+    /// <param name="currentIndex">The index of the King</param>
+    /// <param name="colour">The colour of the King</param>
+    /// <param name="hasMoved">Will be used for castling</param>
+    /// <returns>A List of all the possible moves</returns>
+    public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved)
     {
         List<int> result = new();
         // hasMoved will be used for castling
@@ -115,13 +154,21 @@ public static class MoveSets
             if (Mathf.Abs(newPos.x - currPos.x) > 1 || Mathf.Abs(newPos.y - currPos.y) > 1)
                 continue; // move wraps
             byte targetCode = Board.square[currentIndex + i];
-            if (checkForCheck && IsAttacked(currentIndex + i, colour))
+            if (IsAttacked(currentIndex + i, colour))
                 continue; // unable to move into check
             if (IsNoneOrEnemy(targetCode, colour))
                 result.Add(currentIndex + i);
         }
         return result;
     }
+
+    /// <summary>
+    /// Calculates the moves a Rook can make.<br/>
+    /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
+    /// </summary>
+    /// <param name="currentIndex">The index of the Rook</param>
+    /// <param name="colour">The colour of the Rook</param>
+    /// <returns>A List of all the possible moves</returns>
     public static List<int> CalculateRookMoves(int currentIndex, Colour colour)
     {
         List<int> result = new();
@@ -147,6 +194,14 @@ public static class MoveSets
         }
         return result;
     }
+
+    /// <summary>
+    /// Calculates the moves a Bishop can make.<br/>
+    /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
+    /// </summary>
+    /// <param name="currentIndex">The index of the Bishop</param>
+    /// <param name="colour">The colour of the Bishop</param>
+    /// <returns>A List of all the possible moves</returns>
     public static List<int> CalculateBishopMoves(int currentIndex, Colour colour)
     {
         List<int> result = new();
@@ -174,16 +229,40 @@ public static class MoveSets
         }
         return result;
     }
+
+    /// <summary>
+    /// Calculates the moves a Queen can make.<br/>
+    /// <b>This does not account for moves that put your King in check, or do not save it from check</b>
+    /// </summary>
+    /// <param name="currentIndex">The index of the Queen</param>
+    /// <param name="colour">The colour of the Queen</param>
+    /// <returns>A List of all the possible moves</returns>
     public static List<int> CalculateQueenMoves(int currentIndex, Colour colour)
     {
         List<int> result = CalculateBishopMoves(currentIndex, colour);
         result.AddRange(CalculateRookMoves(currentIndex, colour));
         return result;
     }
+
+    /// <summary>
+    /// Checks if a given square is under attack by any enemy piece<br/>
+    /// This overload uses the default Board.square position
+    /// </summary>
+    /// <param name="index">The index of the square to be checked</param>
+    /// <param name="colour">The colour of the friendly pieces</param>
+    /// <returns>True if the given square is attacked by any enemy pieces, otherwise false</returns>
     public static bool IsAttacked(int index, Colour colour)
     {
         return IsAttacked(index, colour, Board.square);
     }
+
+    /// <summary>
+    /// Checks if a given square is under attack by any enemy piece
+    /// </summary>
+    /// <param name="index">The index of the square to be checked</param>
+    /// <param name="colour">The colour of the friendly pieces</param>
+    /// <param name="boardPosition">The position of the board, this can be used to check theoretical positions</param>
+    /// <returns>True if the given square is attacked by any enemy pieces, otherwise false</returns>
     public static bool IsAttacked(int index, Colour colour, byte[] boardPosition)
     {
         Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
@@ -309,7 +388,15 @@ public static class MoveSets
         #endregion
         return false;
     }
-    public static bool ProtectsCheck(int from, int to, Colour colour, GameObject movingPieceObj)
+
+    /// <summary>
+    /// Checks if a given move will protect your King from check
+    /// </summary>
+    /// <param name="from">The index of the square the piece is moving from</param>
+    /// <param name="to">The index of the square the piece is moving to</param>
+    /// <param name="colour">The colour of the moving piece</param>
+    /// <returns>True if the move is safe to play, otherwise false (the move does not protect your king, or puts it in check)</returns>
+    public static bool ProtectsCheck(int from, int to, Colour colour)
     {
         if (!IsValidIndex(from))
         {
@@ -328,13 +415,7 @@ public static class MoveSets
         {
             theoryPosition[i] = Board.square[i];
         }
-        if (!movingPieceObj.TryGetComponent(out Piece movingPiece))
-        {
-            Debug.Log("Invalid from index in ProtectsCheck");
-            return false;
-        }
-        byte movingPieceCode = movingPiece.pieceCode;
-        theoryPosition[to] = movingPieceCode;
+        theoryPosition[to] = Board.square[from];
         theoryPosition[from] = Piece.None;
         int kingIndex = Board.FindPiece((byte)(Piece.King | colourCode), theoryPosition);
         if (kingIndex == -1)
