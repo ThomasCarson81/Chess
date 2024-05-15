@@ -244,6 +244,11 @@ public static class Utility
         }
         return 0;
     }
+    public static byte PieceCodeAtIndex(int index)
+    {
+        // requires Board.square array to be representative of the board position
+        return Board.square[index];
+    }
     public static GameObject PieceObjectAtWorldPos(float x, float y)
     {
         List<Collider2D> colls = new();

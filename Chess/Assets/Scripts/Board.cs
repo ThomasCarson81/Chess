@@ -131,27 +131,6 @@ public sealed class Board
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
     }
-    public static byte PieceCodeAtIndex(int index)
-    {
-        foreach (GameObject obj in pieceObjs)
-        {
-            if (obj == null)
-            {
-                Debug.Log("pieceObjs contains null");
-                continue;
-            }
-            if (!obj.TryGetComponent<Piece>(out var pc))
-            {
-                Debug.Log("how tf does a piece not have a piece script??");
-                break;
-            }
-            if (pc.boardIndex == index)
-            {
-                return pc.pieceCode;
-            }
-        }
-        return 0;
-    }
     public static void RenderMoveDots(List<int> moves)
     {
         UnRenderMoveDots();
@@ -171,6 +150,9 @@ public sealed class Board
         }
         moveDots.Clear();
     }
+    public static void PrintBoard(byte[] boardPosition)
+    {
+        string resStr1 = "\n";
         string resStr2 = "\n";
         for (int i = 56; i >= 0 ; i++)
         {
