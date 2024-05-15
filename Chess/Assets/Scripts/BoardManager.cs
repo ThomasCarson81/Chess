@@ -11,6 +11,7 @@ public class BoardManager : MonoBehaviour
     public Board board;
     public GameObject piecePrefab;
     public GameObject moveDotPrefab;
+    public GameObject highlightPrefab;
     public Sprite[] pawnSprites;
     public Sprite[] rookSprites;
     public Sprite[] knightSprites;
@@ -21,6 +22,7 @@ public class BoardManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
     public GameObject enPassentPiece;
+    public GameObject highlight;
     public int enPassantIndex = -1;
     public AudioSource moveSound;
     public AudioSource captureSound;

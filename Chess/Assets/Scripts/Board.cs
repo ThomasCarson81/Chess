@@ -218,6 +218,32 @@ public sealed class Board
         }
         return -1;
     }
+
+    /// <summary>
+    /// Highlight (in yellow) the square at the given index
+    /// </summary>
+    /// <param name="index">The square to highlight</param>
+    public static void HighlightSquare(int index)
+    {
+        if (!Utility.IsValidIndex(index))
+        {
+            Debug.LogError("Cannot highlight square at invalid index");
+            return;
+        }
+        RemoveHighlight();
+        Vector3 pos = Utility.BoardIndexToWorldPos(index);
+        pos.z = 0.5f;
+        GameObject highlightSquare = Object.Instantiate(BoardManager.Instance.highlightPrefab, pos, Quaternion.identity);
+        BoardManager.Instance.highlight = highlightSquare;
+    }
+
+    /// <summary>
+    /// Remove the yellow highlight made by HighlightSquare()
+    /// </summary>
+    public static void RemoveHighlight()
+    {
+        Object.Destroy(BoardManager.Instance.highlight);
+    }
 }
 public enum Colour
 {

@@ -225,12 +225,11 @@ public class Piece : MonoBehaviour
     /// <param name="y">The y position in Unity world space to move to after the opponent has been captured</param>
     private void Capture(GameObject enemyObj, byte enemyCode, int enemyIndex, float x, float y)
     {
-        if (MoveSets.IsValidIndex(enemyIndex))
         if (Utility.IsValidIndex(enemyIndex))
         {
             Board.square[enemyIndex] = None;
         }
-        Move(x, y, true, true, prevX, prevY, true, true);
+        Move(x, y, true, true, prevX, prevY, true, false);
         Board.ChangeTurn();
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
         Board.pieceObjs.Remove(enemyObj);
@@ -277,8 +276,10 @@ public class Piece : MonoBehaviour
         if (!IsPickedUp())
         {
             PickUp();
+            Board.HighlightSquare(boardIndex);
             return;
         }
+        Board.RemoveHighlight();
         float x = Mathf.Round(transform.position.x + 0.5f) - 0.5f;
         float y = Mathf.Round(transform.position.y + 0.5f) - 0.5f;
 
@@ -313,7 +314,7 @@ public class Piece : MonoBehaviour
         }
         else
         {
-            Move(x, y, true, true, prevX, prevY, true, true);
+            Move(x, y, true, true, prevX, prevY, true, false);
             Board.ChangeTurn();
             int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
             Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
