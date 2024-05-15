@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public static class Utility
@@ -115,7 +114,6 @@ public static class Utility
     }
     public static Vector3 BoardIndexToWorldPos(int boardIndex)
     {
-        // Note: this is only for **squares**, not the pieces on those squares.
         string notation = BoardIndexToNotation(boardIndex);
         return NotationToWorldPos(notation);
     }

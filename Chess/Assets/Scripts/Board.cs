@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using TMPro;
-using UnityEngine.Purchasing;
 
 public sealed class Board
 {

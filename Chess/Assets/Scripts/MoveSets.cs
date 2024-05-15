@@ -1,9 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
-using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public static class MoveSets
@@ -331,16 +328,12 @@ public static class MoveSets
         {
             theoryPosition[i] = Board.square[i];
         }
-        Vector3 posFrom = Utility.BoardIndexToWorldPos(from);
-        Vector3 posTo = Utility.BoardIndexToWorldPos(to);
         if (!movingPieceObj.TryGetComponent(out Piece movingPiece))
         {
             Debug.Log("Invalid from index in ProtectsCheck");
             return false;
         }
         byte movingPieceCode = movingPiece.pieceCode;
-        //int kingIndexPreMove = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
-        //movingPiece.Move(posTo.x, posTo.y, false, false, posFrom.x, posFrom.y, false, false);
         theoryPosition[to] = movingPieceCode;
         theoryPosition[from] = Piece.None;
         int kingIndex = Board.FindPiece((byte)(Piece.King | colourCode), theoryPosition);
@@ -351,7 +344,6 @@ public static class MoveSets
             Board.PrintBoard(theoryPosition);
         }
         protects = !IsAttacked(kingIndex, colour, theoryPosition);
-        //movingPiece.Move(posFrom.x, posFrom.y, false, false, posTo.x, posTo.y, false, false);
         return protects;
     }
 }
