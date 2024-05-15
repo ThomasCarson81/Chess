@@ -8,7 +8,8 @@ using UnityEngine.Purchasing;
 
 public sealed class Board
 {
-    public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    //public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    public static string startFEN = "8/1k6/8/2q5/5Q2/8/6K1/8 w KQkq - 0 1"; // 2 Kings 2 Queens for testing
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public static int blackMaterial = 0;
