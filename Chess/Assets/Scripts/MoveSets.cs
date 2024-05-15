@@ -35,7 +35,7 @@ public static class MoveSets
         new int[] {7, 14, 21, 28, 35, 42, 49 },
         new int[] {-7, -14, -21, -28, -35, -42, -49 }
     };
-    static bool IsValidIndex(int index)
+    public static bool IsValidIndex(int index)
     {
         return index >= 0 && index < 64;
     }
