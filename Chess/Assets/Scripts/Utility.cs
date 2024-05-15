@@ -7,6 +7,30 @@ using UnityEngine;
 
 public static class Utility
 {
+    public static string PieceCodeToString(byte pieceCode)
+    {
+        string resStr = "";
+        resStr += ColourCode(pieceCode) switch
+        {
+            Piece.White => 'W',
+            Piece.Black => 'B',
+            Piece.None => '_',
+            _ => '?'
+        };
+        resStr += TypeCode(pieceCode) switch
+        {
+            Piece.Pawn => 'P',
+            Piece.King => 'K',
+            Piece.Queen => 'Q',
+            Piece.Rook => 'R',
+            Piece.Knight => 'N',
+            Piece.Bishop => 'B',
+            Piece.EnPassant => 'E',
+            Piece.None => '_',
+            _ => '?'
+        };
+        return resStr;
+    }
     public static byte RemoveMetadata(byte pieceCode)
     {
         /* Explanation
@@ -153,7 +177,34 @@ public static class Utility
     }
     public static int WorldPosToBoardIndex(float x, float y)
     {
-        return NotationToBoardIndex(WorldPosToNotation(x, y));
+        int file = x switch
+        {
+            -3.5f => 0,
+            -2.5f => 1,
+            -1.5f => 2,
+            -0.5f => 3,
+            0.5f => 4,
+            1.5f => 5,
+            2.5f => 6,
+            3.5f => 7,
+            _ => 0
+        };
+        int rank = y switch
+        {
+            -3.5f => 0,
+            -2.5f => 1,
+            -1.5f => 2,
+            -0.5f => 3,
+            0.5f => 4,
+            1.5f => 5,
+            2.5f => 6,
+            3.5f => 7,
+            _ => 0
+        };
+        if ((file == 0 && x != -3.5f) || (rank == 0 && y != -3.5f))
+            Debug.LogError("Inapplicable coordinates provided to WorldPosToBoardIndex()");
+        return file + 8 * rank;
+        //return NotationToBoardIndex(WorldPosToNotation(x, y));
     }
     public static int NotationToBoardIndex(string sqr)
     {
@@ -192,6 +243,11 @@ public static class Utility
             }
         }
         return 0;
+    }
+    public static byte PieceCodeAtIndex(int index)
+    {
+        // requires Board.square array to be representative of the board position
+        return Board.square[index];
     }
     public static GameObject PieceObjectAtWorldPos(float x, float y)
     {

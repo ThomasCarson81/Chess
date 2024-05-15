@@ -88,12 +88,14 @@ public class Piece : MonoBehaviour
     {
         return Utility.IsPickedUp(pieceCode);
     }
-    public void Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant)
+    public void Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant, bool doPrint)
     {
         transform.position = new Vector3(x, y, 0);
         if (updatePickedUp)
             pieceCode ^= (byte)(pieceCode & PickedUp);
+        Board.square[boardIndex] = 0;
         boardIndex = Utility.WorldPosToBoardIndex(x, y);
+        Board.square[boardIndex] = pieceCode;
         if (IsPiece(King))
         {
             if (IsColour(White))
@@ -112,23 +114,40 @@ public class Piece : MonoBehaviour
                 Board.pieceObjs.Remove(BoardManager.Instance.enPassentPiece);
                 Destroy(BoardManager.Instance.enPassentPiece);
                 BoardManager.Instance.enPassentPiece = null;
+                if (BoardManager.Instance.enPassantIndex != -1)
+                {
+                    if (Utility.IsPiece(Board.square[BoardManager.Instance.enPassantIndex], EnPassant))
+                    {
+                        Board.square[BoardManager.Instance.enPassantIndex] = None;
+                    }
+                    BoardManager.Instance.enPassantIndex = -1;
+                }
             }
         }
         if (updateHasMoved)
             pieceCode |= HasMoved;
         if (!IsPiece(Pawn) || !doEnPassant)
+        {
+            if (doPrint)
+                Board.PrintBoard(Board.square);
             return;
+        }
         if (Mathf.Abs(y-prevY) >= 2)
         {
             float epX = x;
             float epY = IsColour(White) ? prevY + 1 : prevY - 1;
+            BoardManager.Instance.enPassantIndex = Utility.WorldPosToBoardIndex(epX, epY);
+            byte epCode = (byte)(Utility.ColourCode(pieceCode) | EnPassant);
             BoardManager.Instance.enPassentPiece = Board.InstantiatePiece(
-                Utility.WorldPosToBoardIndex(epX, epY),
-                (byte)(Utility.ColourCode(pieceCode) | EnPassant)
+                BoardManager.Instance.enPassantIndex,
+                epCode
             );
+            Board.square[BoardManager.Instance.enPassantIndex] = epCode;
             BoardManager.Instance.enPassentPiece.name = "En Passent";
             Board.pieceObjs.Add(BoardManager.Instance.enPassentPiece);
         }
+        if (doPrint)
+            Board.PrintBoard(Board.square);
     }
     public List<int> CalculateMoves(bool checkForChecks)
     {
@@ -157,9 +176,13 @@ public class Piece : MonoBehaviour
         }
         return movesPostFilter;
     } 
-    private void Capture(GameObject enemyObj, byte enemyCode, float x, float y)
+    private void Capture(GameObject enemyObj, byte enemyCode, int enemyIndex, float x, float y)
     {
-        Move(x, y, true, true, prevX, prevY, true);
+        if (MoveSets.IsValidIndex(enemyIndex))
+        {
+            Board.square[enemyIndex] = None;
+        }
+        Move(x, y, true, true, prevX, prevY, true, true);
         Board.ChangeTurn();
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
         Board.pieceObjs.Remove(enemyObj);
@@ -205,11 +228,11 @@ public class Piece : MonoBehaviour
         }
         float x = Mathf.Round(transform.position.x + 0.5f) - 0.5f;
         float y = Mathf.Round(transform.position.y + 0.5f) - 0.5f;
-        
+
         // if the target square is the square the piece is on (didn't move)
         if (x == prevX && y == prevY)
         {
-            Move(x, y, false, true, prevX, prevY, true);
+            Move(x, y, false, true, prevX, prevY, true, false);
             Board.UnRenderMoveDots();
             return;
         }
@@ -226,17 +249,18 @@ public class Piece : MonoBehaviour
 
         if (!Utility.IsNonePiece(targetSquareCode)) // if it's a capture
         { 
-            Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode, x, y);
+            Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode, -1, x, y);
         }
         else if (Utility.IsPiece(targetSquareCode, EnPassant) && IsPiece(Pawn))
         {
             // if it's an En Passant capture
             float enemyY = (colour == Colour.Black) ? y + 1 : y - 1;
-            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode, x, y);
+            int targetIndex = Utility.WorldPosToBoardIndex(x, enemyY);
+            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode, targetIndex, x, y);
         }
         else
         {
-            Move(x, y, true, true, prevX, prevY, true);
+            Move(x, y, true, true, prevX, prevY, true, true);
             Board.ChangeTurn();
             int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
             Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;

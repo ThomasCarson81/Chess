@@ -8,8 +8,8 @@ using UnityEngine.Purchasing;
 
 public sealed class Board
 {
-    //public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    public static string startFEN = "8/1k6/8/2q5/5Q2/8/6K1/8 w KQkq - 0 1"; // 2 Kings 2 Queens for testing
+    public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    //public static string startFEN = "8/1k6/8/2q5/5Q2/8/6K1/8 w KQkq - 0 1"; // 2 Kings 2 Queens for testing
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public static int blackMaterial = 0;
@@ -131,27 +131,6 @@ public sealed class Board
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
     }
-    public static byte PieceCodeAtIndex(int index)
-    {
-        foreach (GameObject obj in pieceObjs)
-        {
-            if (obj == null)
-            {
-                Debug.Log("pieceObjs contains null");
-                continue;
-            }
-            if (!obj.TryGetComponent<Piece>(out var pc))
-            {
-                Debug.Log("how tf does a piece not have a piece script??");
-                break;
-            }
-            if (pc.boardIndex == index)
-            {
-                return pc.pieceCode;
-            }
-        }
-        return 0;
-    }
     public static void RenderMoveDots(List<int> moves)
     {
         UnRenderMoveDots();
@@ -170,6 +149,36 @@ public sealed class Board
             Object.Destroy(gameObject);
         }
         moveDots.Clear();
+    }
+    public static void PrintBoard(byte[] boardPosition)
+    {
+        string resStr1 = "\n";
+        string resStr2 = "\n";
+        for (int i = 56; i >= 0 ; i++)
+        {
+            resStr1 += Utility.PieceCodeToString(boardPosition[i]) + " ";
+            if (boardPosition[i] < 10) resStr2 += "0" + boardPosition[i].ToString() + " ";
+            else resStr2 += boardPosition[i].ToString() + " ";
+            if (i % 8 == 7)
+            {
+                i -= 16;
+                resStr1 += "\n";
+                resStr2 += "\n";
+            }
+        }
+        Debug.Log(resStr1);
+        Debug.Log(resStr2);
+    }
+    public static int FindPiece(byte pieceCode, byte[] boardPosition)
+    {
+        for (int i = 0; i < boardPosition.Length; i++)
+        {
+            if (Utility.RemoveMetadata(boardPosition[i]) == Utility.RemoveMetadata(pieceCode))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }
 public enum Colour

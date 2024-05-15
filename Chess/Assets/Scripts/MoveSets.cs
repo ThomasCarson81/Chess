@@ -35,7 +35,7 @@ public static class MoveSets
         new int[] {7, 14, 21, 28, 35, 42, 49 },
         new int[] {-7, -14, -21, -28, -35, -42, -49 }
     };
-    static bool IsValidIndex(int index)
+    public static bool IsValidIndex(int index)
     {
         return index >= 0 && index < 64;
     }
@@ -49,7 +49,7 @@ public static class MoveSets
         int indexTopLeft = (colour == Colour.White) ? (currentIndex + 7) : (currentIndex - 9);
         if (IsValidIndex(indexTopLeft))
         {
-            byte pieceTopLeft = Board.PieceCodeAtIndex(indexTopLeft);
+            byte pieceTopLeft = Board.square[indexTopLeft];
             if ((!Utility.IsNonePiece(pieceTopLeft) || Utility.IsPiece(pieceTopLeft, Piece.EnPassant)) && !Utility.IsColour(pieceTopLeft, colour))
             {
                 result.Add(indexTopLeft);
@@ -58,7 +58,7 @@ public static class MoveSets
         int indexTopRight = (colour == Colour.White) ? (currentIndex + 9) : (currentIndex - 7);
         if (IsValidIndex(indexTopRight))
         {
-            byte pieceTopRight = Board.PieceCodeAtIndex(indexTopRight);
+            byte pieceTopRight = Board.square[indexTopRight];
             if ((!Utility.IsNonePiece(pieceTopRight) || Utility.IsPiece(pieceTopRight, Piece.EnPassant))
                 && !Utility.IsColour(pieceTopRight, colour))
                 result.Add(indexTopRight);
@@ -66,7 +66,7 @@ public static class MoveSets
         int index1Forward = (colour == Colour.White) ? (currentIndex + 8) : (currentIndex - 8);
         if (IsValidIndex(index1Forward))
         {
-            byte piece1Forward = Board.PieceCodeAtIndex(index1Forward);
+            byte piece1Forward = Board.square[index1Forward];
             if (!Utility.IsNonePiece(piece1Forward))
                 return result;
             result.Add(index1Forward);
@@ -76,7 +76,7 @@ public static class MoveSets
         int index2Forward = (colour == Colour.White) ? (currentIndex + 16) : (currentIndex - 16);
         if (IsValidIndex(index2Forward))
         {
-            byte piece2Forward = Board.PieceCodeAtIndex(index2Forward);
+            byte piece2Forward = Board.square[index2Forward];
             if (Utility.IsNonePiece(piece2Forward))
                 result.Add(index2Forward);
         }
@@ -88,7 +88,7 @@ public static class MoveSets
         foreach (int i in Knight)
         {
             if (!IsValidIndex(currentIndex + i)) continue;
-            byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+            byte targetCode = Board.square[currentIndex + i];
             Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
             Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
             float xDif = Mathf.Abs(newPos.x - currPos.x);
@@ -117,7 +117,7 @@ public static class MoveSets
             Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
             if (Mathf.Abs(newPos.x - currPos.x) > 1 || Mathf.Abs(newPos.y - currPos.y) > 1)
                 continue; // move wraps
-            byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+            byte targetCode = Board.square[currentIndex + i];
             if (checkForCheck && IsAttacked(currentIndex + i, colour))
                 continue; // unable to move into check
             if (IsNoneOrEnemy(targetCode, colour))
@@ -133,7 +133,7 @@ public static class MoveSets
             foreach (int i in dir)
             {
                 if (!IsValidIndex(currentIndex + i)) break; // Dir went off the board
-                byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+                byte targetCode = Board.square[currentIndex + i];
                 Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
                 Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
                 if (currPos.x != newPos.x && currPos.y != newPos.y)
@@ -158,7 +158,7 @@ public static class MoveSets
             foreach (int i in dir)
             {
                 if (!IsValidIndex(currentIndex + i)) break; // Dir went off the board
-                byte targetCode = Board.PieceCodeAtIndex(currentIndex + i);
+                byte targetCode = Board.square[currentIndex + i];
                 Vector2 currPos = Utility.BoardIndexToWorldPos(currentIndex);
                 Vector2 newPos = Utility.BoardIndexToWorldPos(currentIndex + i);
                 if (Mathf.Abs(newPos.x - currPos.x) != Mathf.Abs(newPos.y - currPos.y))
@@ -185,6 +185,10 @@ public static class MoveSets
     }
     public static bool IsAttacked(int index, Colour colour)
     {
+        return IsAttacked(index, colour, Board.square);
+    }
+    public static bool IsAttacked(int index, Colour colour, byte[] boardPosition)
+    {
         Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
         Vector2 currPos = Utility.BoardIndexToWorldPos(index);
         Vector2 newPos;
@@ -192,7 +196,7 @@ public static class MoveSets
         int indexLeft = (colour == Colour.White) ? (index + 7) : (index - 9);
         if (IsValidIndex(indexLeft))
         {
-            byte pieceLeft = Board.PieceCodeAtIndex(indexLeft);
+            byte pieceLeft = boardPosition[indexLeft];
             newPos = Utility.BoardIndexToWorldPos(indexLeft);
             bool valid = true;
             if (Mathf.Abs(currPos.x - newPos.x) != 1 &&  Mathf.Abs(currPos.y - newPos.y) != 1)
@@ -208,7 +212,7 @@ public static class MoveSets
         int indexRight = (colour == Colour.White) ? (index + 9) : (index - 7);
         if (IsValidIndex(indexRight))
         {
-            byte pieceRight = Board.PieceCodeAtIndex(indexRight);
+            byte pieceRight = boardPosition[indexRight];
             newPos = Utility.BoardIndexToWorldPos(indexRight);
             bool valid = true;
             if (Mathf.Abs(currPos.x - newPos.x) != 1 && Mathf.Abs(newPos.y - newPos.y) != 1)
@@ -228,7 +232,7 @@ public static class MoveSets
             foreach (int i in dir)
             {
                 if (!IsValidIndex(index + i)) break; // Dir went off the board
-                byte targetCode = Board.PieceCodeAtIndex(index + i);
+                byte targetCode = boardPosition[index + i];
                 newPos = Utility.BoardIndexToWorldPos(index + i);
                 if (currPos.x != newPos.x && currPos.y != newPos.y)
                     break; // resolves wrapping
@@ -251,7 +255,7 @@ public static class MoveSets
             foreach (int i in dir)
             {
                 if (!IsValidIndex(index + i)) break; // Dir went off the board
-                byte targetCode = Board.PieceCodeAtIndex(index + i);
+                byte targetCode = boardPosition[index + i];
                 newPos = Utility.BoardIndexToWorldPos(index + i);
                 if (Mathf.Abs(newPos.x - currPos.x) != Mathf.Abs(newPos.y - currPos.y))
                     break; // resolves wrapping
@@ -272,7 +276,7 @@ public static class MoveSets
         foreach (int i in Knight)
         {
             if (!IsValidIndex(index + i)) continue;
-            byte targetCode = Board.PieceCodeAtIndex(index + i);
+            byte targetCode = boardPosition[index + i];
             newPos = Utility.BoardIndexToWorldPos(index + i);
             float xDif = Mathf.Abs(newPos.x - currPos.x);
             float yDif = Mathf.Abs(newPos.y - currPos.y);
@@ -298,7 +302,7 @@ public static class MoveSets
             newPos = Utility.BoardIndexToWorldPos(index + i);
             if (Mathf.Abs(newPos.x - currPos.x) > 1 || Mathf.Abs(newPos.y - currPos.y) > 1)
                 continue; // move wraps
-            byte targetCode = Board.PieceCodeAtIndex(index + i);
+            byte targetCode = boardPosition[index + i];
             if (Utility.IsPiece(targetCode, Piece.King) && Utility.IsColour(targetCode, enemyColour))
             {
                 //Debug.Log($"{index}-K");
@@ -321,6 +325,12 @@ public static class MoveSets
             return false;
         }
         bool protects;
+        byte[] theoryPosition = new byte[64];
+        byte colourCode = (colour == Colour.White) ? Piece.White : Piece.Black;
+        for (int i = 0; i < Board.square.Length; i++)
+        {
+            theoryPosition[i] = Board.square[i];
+        }
         Vector3 posFrom = Utility.BoardIndexToWorldPos(from);
         Vector3 posTo = Utility.BoardIndexToWorldPos(to);
         if (!movingPieceObj.TryGetComponent(out Piece movingPiece))
@@ -328,12 +338,20 @@ public static class MoveSets
             Debug.Log("Invalid from index in ProtectsCheck");
             return false;
         }
-        //byte movingPieceCode = movingPiece.pieceCode;
+        byte movingPieceCode = movingPiece.pieceCode;
         //int kingIndexPreMove = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
-        movingPiece.Move(posTo.x, posTo.y, false, false, posFrom.x, posFrom.y, false);
-        int kingIndex = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
-        protects = !IsAttacked(kingIndex, colour);
-        movingPiece.Move(posFrom.x, posFrom.y, false, false, posTo.x, posTo.y, false);
+        //movingPiece.Move(posTo.x, posTo.y, false, false, posFrom.x, posFrom.y, false, false);
+        theoryPosition[to] = movingPieceCode;
+        theoryPosition[from] = Piece.None;
+        int kingIndex = Board.FindPiece((byte)(Piece.King | colourCode), theoryPosition);
+        if (kingIndex == -1)
+        {
+            Debug.LogError($"King not found in theory position, code: ({(byte)(Piece.King | colourCode)})");
+            Debug.Log("Theory Board: ");
+            Board.PrintBoard(theoryPosition);
+        }
+        protects = !IsAttacked(kingIndex, colour, theoryPosition);
+        //movingPiece.Move(posFrom.x, posFrom.y, false, false, posTo.x, posTo.y, false, false);
         return protects;
     }
 }

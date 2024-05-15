@@ -21,6 +21,7 @@ public class BoardManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
     public GameObject enPassentPiece;
+    public int enPassantIndex = -1;
     public AudioSource moveSound;
     public AudioSource captureSound;
     public AudioSource checkSound;
