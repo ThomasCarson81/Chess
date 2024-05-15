@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
 public sealed class Board
 {
-    public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    //public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    public static string startFEN = "1k6/1q6/8/8/8/8/6Q1/6K1 w KQkq - 0 1";
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public static int blackMaterial = 0;
@@ -235,6 +237,37 @@ public sealed class Board
     public static void RemoveHighlight()
     {
         Object.Destroy(BoardManager.Instance.highlight);
+    }
+    public static bool CheckForMate(Colour colour)
+    {
+        if (pieceObjs.Count < 3)
+        {
+            // insufficient material TODO: add check for knights when checking for insufficient material
+            BoardManager.Instance.Stalemate();
+            return true;
+        }
+        for (int i = 0; i < square.Length; i++)
+        {
+            if (Utility.IsColour(square[i], colour))
+            {
+                Vector3 pos = Utility.BoardIndexToWorldPos(i);
+                if (!Utility.PieceObjectAtWorldPos(pos.x, pos.y).TryGetComponent<Piece>(out var pc))
+                    Debug.LogError("Piece with no script detected");
+                if (pc.CalculateMoves().Count > 0)
+                    return false;
+            }
+        }
+        int kingIndex = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
+        if (MoveSets.IsAttacked(kingIndex, colour))
+        {
+            Colour loser = (colour == Colour.White) ? Colour.Black : Colour.White;
+            BoardManager.Instance.Checkmate(loser);
+        }
+        else
+        {
+            BoardManager.Instance.Stalemate();
+        }
+        return true;
     }
 }
 public enum Colour

@@ -247,9 +247,15 @@ public class Piece : MonoBehaviour
         int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
         Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
         if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
-            BoardManager.Instance.checkSound.Play();
+        {
+            if (!Board.CheckForMate(enemyColour))
+                BoardManager.Instance.checkSound.Play();
+        }
         else
-            BoardManager.Instance.captureSound.Play();
+        {
+            if (!Board.CheckForMate(enemyColour))
+                BoardManager.Instance.captureSound.Play();
+        }
     }
 
     /// <summary>
@@ -315,9 +321,15 @@ public class Piece : MonoBehaviour
             if (playSounds)
             {
                 if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
-                    BoardManager.Instance.checkSound.Play();
+                {
+                    if (!Board.CheckForMate(enemyColour))
+                        BoardManager.Instance.checkSound.Play();
+                }
                 else
-                    BoardManager.Instance.moveSound.Play();
+                {
+                    if (!Board.CheckForMate(enemyColour))
+                        BoardManager.Instance.moveSound.Play();
+                }
             }
         }
         

@@ -30,6 +30,7 @@ public class BoardManager : MonoBehaviour
     public Sprite errorSprite;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
+    public TextMeshProUGUI mateText;
     public GameObject enPassentPiece;
     public GameObject highlight;
     public int enPassantIndex = -1;
@@ -38,6 +39,7 @@ public class BoardManager : MonoBehaviour
     public AudioSource checkSound;
     public AudioSource castleSound;
     public AudioSource promoteSound;
+    public AudioSource gameEndSound;
     public byte chosenPiece = Piece.None;
     public Piece promotingPiece = null;
     void Awake()
@@ -56,6 +58,7 @@ public class BoardManager : MonoBehaviour
             Instance = this;
         }
         board = new();
+        mateText.enabled = false;
         HideButtons();
     }
     public void OnChooseQueen()
@@ -139,21 +142,43 @@ public class BoardManager : MonoBehaviour
         {
             if (MoveSets.IsAttacked(Board.blackKingIndex, Colour.Black))
             {
+                if (Board.CheckForMate(Colour.Black))
+                    Debug.Log("Checkmate!");
                 check = true;
                 checkSound.Play();
             }
+            else if (Board.CheckForMate(Colour.Black))
+                Debug.Log("Stalemate!");
         }
         else
         {
             if (MoveSets.IsAttacked(Board.whiteKingIndex, Colour.White))
             {
+                if (Board.CheckForMate(Colour.White))
+                    Debug.Log("Checkmate!");
                 check = true;
                 checkSound.Play();
             }
+            else if (Board.CheckForMate(Colour.White))
+                Debug.Log("Stalemate!");
         }
         if (!check)
         {
             promoteSound.Play();    
         }
+    }
+    public void Checkmate(Colour winner)
+    {
+        mateText.text = $"Checkmate! {winner} wins!";
+        mateText.enabled = true;
+        Board.canClick = false;
+        gameEndSound.Play();
+    }
+    public void Stalemate()
+    {
+        mateText.text = $"Stalemate!";
+        mateText.enabled = true;
+        Board.canClick = false;
+        gameEndSound.Play();
     }
 }
