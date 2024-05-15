@@ -274,7 +274,6 @@ public class Piece : MonoBehaviour
             Board.HighlightSquare(boardIndex);
             return;
         }
-        Board.RemoveHighlight();
         float x = Mathf.Round(transform.position.x + 0.5f) - 0.5f;
         float y = Mathf.Round(transform.position.y + 0.5f) - 0.5f;
 
@@ -283,12 +282,13 @@ public class Piece : MonoBehaviour
         {
             Move(x, y, false, true, prevX, prevY, true, false);
             Board.UnRenderMoveDots();
+            Board.RemoveHighlight();
             return;
         }
         if (!legalMoves.Contains(Utility.WorldPosToBoardIndex(x, y)))
             return; // Illegal move
         Board.UnRenderMoveDots();
-
+        Board.RemoveHighlight();
         byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);
         
         // if there is a piece of the same colour at the position, don't put the piece down
