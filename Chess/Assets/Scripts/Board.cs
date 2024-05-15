@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using TMPro;
 
 public sealed class Board
 {
     public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    //public static string startFEN = "8/1k6/8/2q5/5Q2/8/6K1/8 w KQkq - 0 1"; // 2 Kings 2 Queens for testing
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public static int blackMaterial = 0;
@@ -36,7 +34,6 @@ public sealed class Board
     /// <returns>The instantiated GameObject</returns>
     public static GameObject InstantiatePiece(int boardIndex, byte pieceCode)
     {
-        //if (Utility.IsNonePiece(square[boardIndex])) return null;
         if (BoardManager.Instance == null) Debug.LogError("BoardManager.Instance = null");
         if (BoardManager.Instance.piecePrefab == null) Debug.LogError("BoardManager.Instance.piecePrefab = null");
         Vector3 pos = Utility.BoardIndexToWorldPos(boardIndex);
@@ -81,7 +78,6 @@ public sealed class Board
     /// <returns>The corresponding board position</returns>
     byte[] PositionFromFEN(string fen)
     {
-        //string resStr = string.Empty;
         byte[] result = new byte[64];
         string[] splitFEN = fen.Split("/");
         splitFEN[^1] = splitFEN[^1].Split(" ")[0];
@@ -96,7 +92,6 @@ public sealed class Board
             {
                 if (char.IsDigit(c))
                 {
-                    //Debug.Log($"Skipping {c - '0'} times");
                     skips = c - '0'; // converts char to int
                     while (skips > 0)
                     {
@@ -104,7 +99,6 @@ public sealed class Board
                         skips--;
                         index--;
                     }
-                    //resStr += "skip ";
                     continue;
                 }
                 colour = char.IsUpper(c) ? Piece.White : Piece.Black; // UPPER = White, Lower = black
@@ -134,14 +128,11 @@ public sealed class Board
                 };
                 // place a piece with the specified colour at this position
                 result[index] = (byte)(pieceType | colour); 
-                //resStr += s + " ";
                 index--;
             }
         }
         if (whiteKings != 1 || blackKings != 1)
             Debug.LogError("Please use exactly 1 of each colour king");
-        //Debug.Log($"FEN:\n{resStr}");
-        //Debug.Log($"len(FEN)={result.Length}");
         return result;
     }
 

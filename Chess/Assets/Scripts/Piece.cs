@@ -66,8 +66,8 @@ public class Piece : MonoBehaviour
             21 => BoardManager.Instance.rookSprites[1],
             14 => BoardManager.Instance.queenSprites[0],
             22 => BoardManager.Instance.queenSprites[1],
-            15 => null, // BoardManager.Instance.errorSprite, // white en passent
-            23 => null, // BoardManager.Instance.errorSprite, // black en passent
+            15 => null, // white en passent
+            23 => null, // black en passent
             _ => BoardManager.Instance.errorSprite // in case of an error, show a red dot
         };
     }
@@ -148,13 +148,9 @@ public class Piece : MonoBehaviour
                 playSound = false;
             }
             if (IsColour(White))
-            {
                 Board.whiteKingIndex = boardIndex;
-            }
             else
-            {
                 Board.blackKingIndex = boardIndex;
-            }
         }
         if ((x != prevX || y != prevY) && doEnPassant) // if it actually moved and En Passant is accounted for
         {
@@ -175,17 +171,18 @@ public class Piece : MonoBehaviour
         }
         if (updateHasMoved)
             pieceCode |= HasMoved;
+        // if this piece isn't a pawn or doEnPassant is false, none of the following code matters
         if (!IsPiece(Pawn) || !doEnPassant)
         {
             if (doPrint)
                 Board.PrintBoard(Board.square);
             return playSound;
         }
+        // if the move was a double square move
         if (Mathf.Abs(y-prevY) >= 2)
         {
-            float epX = x;
             float epY = IsColour(White) ? prevY + 1 : prevY - 1;
-            BoardManager.Instance.enPassantIndex = Utility.WorldPosToBoardIndex(epX, epY);
+            BoardManager.Instance.enPassantIndex = Utility.WorldPosToBoardIndex(x, epY);
             byte epCode = (byte)(Utility.ColourCode(pieceCode) | EnPassant);
             BoardManager.Instance.enPassentPiece = Board.InstantiatePiece(
                 BoardManager.Instance.enPassantIndex,
@@ -225,14 +222,7 @@ public class Piece : MonoBehaviour
         foreach (int move in movesPreFilter)
         {
             if (MoveSets.ProtectsCheck(boardIndex, move, colour))
-            {
-                //Debug.Log($"{move} protects.");
                 movesPostFilter.Add(move);
-            }
-            else
-            {
-                //Debug.Log($"{move} does not protect.");
-            }
         }
         return movesPostFilter;
     }
@@ -248,9 +238,7 @@ public class Piece : MonoBehaviour
     private void Capture(GameObject enemyObj, byte enemyCode, int enemyIndex, float x, float y)
     {
         if (Utility.IsValidIndex(enemyIndex))
-        {
             Board.square[enemyIndex] = None;
-        }
         Move(x, y, true, true, prevX, prevY, true, false);
         Board.ChangeTurn();
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
@@ -259,24 +247,9 @@ public class Piece : MonoBehaviour
         int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
         Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
         if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
-        {
-            //if (colour == Colour.Black)
-            //{
-            //    Debug.Log($"white king in check! (i{enemyKingIndex}) after capture");
-            //    Debug.Log($"white={Board.whiteKingIndex}, black={Board.blackKingIndex}");
-            //}
-            //else
-            //{
-            //    Debug.Log($"black king in check! (i{enemyKingIndex}) after capture");
-            //    Debug.Log($"white={Board.whiteKingIndex}, black={Board.blackKingIndex}");
-            //}
             BoardManager.Instance.checkSound.Play();
-        }
         else
-        {
             BoardManager.Instance.captureSound.Play();
-        }
-        
     }
 
     /// <summary>
@@ -293,7 +266,7 @@ public class Piece : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (Board.turn != colour || !Board.canClick) // it's not your turn
+        if (Board.turn != colour || !Board.canClick) // it's not your turn, or someone is promoting
             return;
         if (!IsPickedUp())
         {
@@ -315,7 +288,6 @@ public class Piece : MonoBehaviour
         if (!legalMoves.Contains(Utility.WorldPosToBoardIndex(x, y)))
             return; // Illegal move
         Board.UnRenderMoveDots();
-
 
         byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);
         
@@ -342,22 +314,10 @@ public class Piece : MonoBehaviour
             Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
             if (playSounds)
             {
-                //if (colour == Colour.Black)
-                //{
-                //    Debug.Log($"white king in check! (i{enemyKingIndex})");
-                //}
-                //else
-                //{
-                //    Debug.Log($"black king in check! (i{enemyKingIndex})");
-                //}
                 if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
-                {
                     BoardManager.Instance.checkSound.Play();
-                }
                 else
-                {
                     BoardManager.Instance.moveSound.Play();
-                }
             }
         }
         

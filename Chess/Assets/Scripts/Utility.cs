@@ -58,8 +58,8 @@ public static class Utility
         /* Explanation
          * 00101100 (a white bishop which has moved and is not picked up) Bitwise AND'd with
          * 00011111 (colour section = 31) =
-         * 00001111
-         * end the metadata is gone
+         * 00001100
+         * this leaves only the colour and type data
          */
         return (byte)(pieceCode & 31);
     }
@@ -149,7 +149,6 @@ public static class Utility
     /// <returns>True if the piece is the same colour, otherwise false</returns>
     public static bool IsColour(byte pieceCode, Colour colour)
     {
-        // returns true if the input pieceCode is a NonePiece
         byte byteColour = (colour == Colour.White) ? Piece.White : Piece.Black;
         return IsColour(pieceCode, byteColour);
     }
@@ -307,7 +306,6 @@ public static class Utility
             return -1;
         }
         return file + 8 * rank;
-        //return NotationToBoardIndex(WorldPosToNotation(x, y));
     }
 
     /// <summary>
@@ -365,17 +363,6 @@ public static class Utility
             }
         }
         return 0;
-    }
-
-    /// <summary>
-    /// Get the piece code at a given board index
-    /// </summary>
-    /// <param name="index">The index of the square</param>
-    /// <returns>The piece code on that square</returns>
-    public static byte PieceCodeAtIndex(int index)
-    {
-        // requires Board.square array to be representative of the board position
-        return Board.square[index];
     }
 
     /// <summary>
@@ -440,6 +427,6 @@ public static class Utility
     /// <returns>True if the piece is None or an enemy to the given colour, otherwise false</returns>
     public static bool IsNoneOrEnemy(byte piece, Colour friendlyColour)
     {
-        return Utility.IsNonePiece(piece) || (!Utility.IsColour(piece, friendlyColour) && !Utility.IsPiece(piece, Piece.EnPassant));
+        return IsNonePiece(piece) || (!IsColour(piece, friendlyColour) && !IsPiece(piece, Piece.EnPassant));
     }
 }

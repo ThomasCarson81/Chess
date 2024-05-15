@@ -273,14 +273,9 @@ public static class MoveSets
             newPos = Utility.BoardIndexToWorldPos(indexLeft);
             bool valid = true;
             if (Mathf.Abs(currPos.x - newPos.x) != 1 &&  Mathf.Abs(currPos.y - newPos.y) != 1)
-            {
                 valid = false; 
-            }
             if (valid && Utility.IsPiece(pieceLeft, Piece.Pawn) && Utility.IsColour(pieceLeft, enemyColour))
-            {
-                //Debug.Log($"{indexLeft}-LP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
                 return true;
-            }
         }
         int indexRight = (colour == Colour.White) ? (index + 9) : (index - 7);
         if (Utility.IsValidIndex(indexRight))
@@ -289,14 +284,9 @@ public static class MoveSets
             newPos = Utility.BoardIndexToWorldPos(indexRight);
             bool valid = true;
             if (Mathf.Abs(currPos.x - newPos.x) != 1 && Mathf.Abs(newPos.y - newPos.y) != 1)
-            {
                 valid = false;
-            }
             if (valid && Utility.IsPiece(pieceRight, Piece.Pawn) && Utility.IsColour(pieceRight, enemyColour))
-            {
-                //Debug.Log($"{indexLeft}-RP-(X{Mathf.Abs(currPos.x - newPos.x)},Y{Mathf.Abs(newPos.y - newPos.y)})");
                 return true;
-            }
         }
         #endregion
         #region ROOK_CHECK
@@ -314,10 +304,7 @@ public static class MoveSets
                 if (Utility.IsColour(targetCode, colour))
                     break; //friendly piece protecting
                 if (Utility.IsPiece(targetCode, Piece.Rook) || Utility.IsPiece(targetCode, Piece.Queen))
-                {
-                    //Debug.Log($"{index}-R/Q");
                     return true;
-                }
                 break; // finish with this direction
             }
         }
@@ -337,10 +324,7 @@ public static class MoveSets
                 if (Utility.IsColour(targetCode, colour))
                     break; //friendly piece protecting
                 if (Utility.IsPiece(targetCode, Piece.Bishop) || Utility.IsPiece(targetCode, Piece.Queen))
-                {
-                    //Debug.Log($"{index}-B/Q");
                     return true;
-                }
                 break; // finish with this direction
             }
         }
@@ -361,10 +345,7 @@ public static class MoveSets
             if (!valid)
                 continue;
             if (Utility.IsPiece(targetCode, Piece.Knight) && Utility.IsColour(targetCode, enemyColour))
-            {
-                //Debug.Log($"{index}-N");
                 return true;
-            }
         }
         #endregion
         #region KING_CHECK
@@ -377,10 +358,7 @@ public static class MoveSets
                 continue; // move wraps
             byte targetCode = boardPosition[index + i];
             if (Utility.IsPiece(targetCode, Piece.King) && Utility.IsColour(targetCode, enemyColour))
-            {
-                //Debug.Log($"{index}-K");
                 return true;
-            }
         }
         #endregion
         return false;
