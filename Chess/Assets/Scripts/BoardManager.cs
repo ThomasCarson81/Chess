@@ -107,6 +107,7 @@ public class BoardManager : MonoBehaviour
         rookButton.enabled = true;
         bishopImg.enabled = true;
         bishopButton.enabled = true;
+        Board.canClick = false;
     }
     public void HideButtons()
     {
@@ -118,6 +119,7 @@ public class BoardManager : MonoBehaviour
         rookButton.enabled = false;
         bishopImg.enabled = false;
         bishopButton.enabled = false;
+        Board.canClick = true;
     }
     public void Promote()
     {
@@ -131,6 +133,27 @@ public class BoardManager : MonoBehaviour
         promotingPiece.pieceCode &= 248;
         promotingPiece.pieceCode |= chosenPiece;
         promotingPiece.sr.sprite = promotingPiece.GetSpriteFromPieceCode(Utility.RemoveMetadata(promotingPiece.pieceCode));
-        promoteSound.Play();
+        Board.square[promotingPiece.boardIndex] = promotingPiece.pieceCode;
+        bool check = false;
+        if (promotingPiece.colour == Colour.White)
+        {
+            if (MoveSets.IsAttacked(Board.blackKingIndex, Colour.Black))
+            {
+                check = true;
+                checkSound.Play();
+            }
+        }
+        else
+        {
+            if (MoveSets.IsAttacked(Board.whiteKingIndex, Colour.White))
+            {
+                check = true;
+                checkSound.Play();
+            }
+        }
+        if (!check)
+        {
+            promoteSound.Play();    
+        }
     }
 }

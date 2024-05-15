@@ -276,7 +276,7 @@ public class Piece : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (Board.turn != colour) // it's not your turn
+        if (Board.turn != colour || !Board.canClick) // it's not your turn
             return;
         if (!IsPickedUp())
         {

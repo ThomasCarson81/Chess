@@ -16,6 +16,7 @@ public sealed class Board
     public static Colour turn = Colour.White;
     public static List<GameObject> moveDots = new();
     public static int whiteKingIndex, blackKingIndex;
+    public static bool canClick = true;
 
     public Board()
     {
