@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public static class MoveSets
@@ -123,7 +124,24 @@ public static class MoveSets
     public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved)
     {
         List<int> result = new();
-        // hasMoved will be used for castling
+        if (!hasMoved)
+        {
+            if (Board.square[currentIndex+1] == Piece.None &&
+                Board.square[currentIndex + 2] == Piece.None &&
+                !Utility.HasMoved(Board.square[currentIndex + 3]))
+            {
+                // short castle possible
+                result.Add(currentIndex + 2);
+            }
+            if (Board.square[currentIndex - 1] == Piece.None &&
+                Board.square[currentIndex - 2] == Piece.None &&
+                Board.square[currentIndex - 3] == Piece.None &&
+                !Utility.HasMoved(Board.square[currentIndex - 4]))
+            {
+                // long castle possible
+                result.Add(currentIndex - 2);
+            }
+        }
         foreach (int i in King)
         {
             if (!Utility.IsValidIndex(currentIndex + i))

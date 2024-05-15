@@ -121,8 +121,10 @@ public class Piece : MonoBehaviour
     /// <param name="prevY">The previous y position in world space of the piece</param>
     /// <param name="doEnPassant">Whether or not to account for En Passant in the move</param>
     /// <param name="doPrint">Whether or not to Debug.Log() the board position after the move</param>
-    public void Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant, bool doPrint)
+    /// <returns>Whether or not sounds should be played, this will be false if a sound was played during Move()</returns>
+    public bool Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant, bool doPrint)
     {
+        bool playSound = true;
         transform.position = new Vector3(x, y, 0);
         if (updatePickedUp)
             pieceCode ^= (byte)(pieceCode & PickedUp);
@@ -131,6 +133,20 @@ public class Piece : MonoBehaviour
         Board.square[boardIndex] = pieceCode;
         if (IsPiece(King))
         {
+            if (x - prevX == 2)
+            {
+                // short castled
+                Utility.PieceObjectAtWorldPos(x + 1, y).GetComponent<Piece>().Move(x - 1, y, true, false, x + 1, y, true, false);
+                BoardManager.Instance.castleSound.Play();
+                playSound = false;
+            }
+            else if (x - prevX == -2)
+            {
+                // long castled
+                Utility.PieceObjectAtWorldPos(x - 2, y).GetComponent<Piece>().Move(x + 1, y, true, false, x - 2, y, true, false);
+                BoardManager.Instance.castleSound.Play();
+                playSound = false;
+            }
             if (IsColour(White))
             {
                 Board.whiteKingIndex = boardIndex;
@@ -163,7 +179,7 @@ public class Piece : MonoBehaviour
         {
             if (doPrint)
                 Board.PrintBoard(Board.square);
-            return;
+            return playSound;
         }
         if (Mathf.Abs(y-prevY) >= 2)
         {
@@ -186,6 +202,7 @@ public class Piece : MonoBehaviour
         }
         if (doPrint)
             Board.PrintBoard(Board.square);
+        return playSound;
     }
 
     /// <summary>
@@ -319,11 +336,11 @@ public class Piece : MonoBehaviour
         }
         else
         {
-            Move(x, y, true, true, prevX, prevY, true, false);
+            bool playSounds = Move(x, y, true, true, prevX, prevY, true, false);
             Board.ChangeTurn();
             int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
             Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
-            if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
+            if (playSounds)
             {
                 //if (colour == Colour.Black)
                 //{
@@ -333,11 +350,14 @@ public class Piece : MonoBehaviour
                 //{
                 //    Debug.Log($"black king in check! (i{enemyKingIndex})");
                 //}
-                BoardManager.Instance.checkSound.Play();
-            }
-            else
-            {
-                BoardManager.Instance.moveSound.Play();
+                if (MoveSets.IsAttacked(enemyKingIndex, enemyColour))
+                {
+                    BoardManager.Instance.checkSound.Play();
+                }
+                else
+                {
+                    BoardManager.Instance.moveSound.Play();
+                }
             }
         }
         
