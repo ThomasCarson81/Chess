@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -79,9 +78,39 @@ public sealed class Board
     /// <returns>The corresponding board position</returns>
     byte[] PositionFromFEN(string fen)
     {
+        bool whiteCastleQueenside = false;
+        bool blackCastleQueenside = false;
+        bool whiteCastleKingside = false;
+        bool blackCastleKingside = false;
         byte[] result = new byte[64];
-        string[] splitFEN = fen.Split("/");
-        splitFEN[^1] = splitFEN[^1].Split(" ")[0];
+        string[] splitFEN = fen.Split('/'); // "rnbqkbnr", "pppppppp", "8", "8", "8", "8", "PPPPPPPP", "RNBQKBNR w KQkq e3 0 1"
+        string turnStr = splitFEN[^1].Split(' ')[1];
+        string epLocation = splitFEN[^1].Split(' ')[3];
+        string castleAvailability = splitFEN[^1].Split(' ')[2];
+        splitFEN[^1] = splitFEN[^1].Split(' ')[0];
+        if (char.ToLower(turnStr[0]) == 'b')
+            ChangeTurn(); // turn is white by default, so change it if it should be black
+        foreach (char c in castleAvailability)
+        {
+            switch (c)
+            {
+                case 'K':
+                    whiteCastleKingside = true;
+                    break;
+                case 'Q':
+                    whiteCastleQueenside = true;
+                    break;
+                case 'k':
+                    blackCastleQueenside = true;
+                    break;
+                case 'q':
+                    blackCastleKingside = true;
+                    break;
+                default:
+                    Debug.LogError("Invalid FEN in castle availability!");
+                    break;
+            }
+        }
         int index = 63; // start at the top of the board
         byte colour;
         byte pieceType;
@@ -134,7 +163,30 @@ public sealed class Board
         }
         if (whiteKings != 1 || blackKings != 1)
             Debug.LogError("Please use exactly 1 of each colour king");
+        int epIndex = -1;
+        if (epLocation != "-")
+            epIndex = Utility.NotationToBoardIndex(epLocation);
+        if (Utility.IsValidIndex(epIndex))
+        {
+            byte epColour = (turn == Colour.White) ? Piece.Black : Piece.White;
+            result[epIndex] = (byte)(epColour | Piece.EnPassant);
+        }
+        if (!whiteCastleQueenside && Utility.IsPiece(result[0], Piece.Rook) && Utility.IsColour(result[0], Piece.White))
+            result[0] |= Piece.HasMoved;
+        if (!whiteCastleKingside && Utility.IsPiece(result[7], Piece.Rook) && Utility.IsColour(result[7], Piece.White))
+            result[7] |= Piece.HasMoved;
+        if (!blackCastleQueenside && Utility.IsPiece(result[56], Piece.Rook) && Utility.IsColour(result[56], Piece.Black))
+            result[56] |= Piece.HasMoved;
+        if (!blackCastleKingside && Utility.IsPiece(result[63], Piece.Rook) && Utility.IsColour(result[63], Piece.Black))
+            result[63] |= Piece.HasMoved;
         return result;
+    }
+
+    public string GetFEN(byte[] boardPosition)
+    {
+        string fen = "";
+
+        return fen;
     }
 
     /// <summary>
