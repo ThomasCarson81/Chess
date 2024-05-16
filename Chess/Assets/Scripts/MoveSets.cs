@@ -43,40 +43,59 @@ public static class MoveSets
     /// <returns>A List of all the possible moves</returns>
     public static List<int> CalculatePawnMoves(int currentIndex, Colour colour, bool hasMoved)
     {
+        Vector3 currPos = Utility.BoardIndexToWorldPos(currentIndex);
+        Vector3 newPos;
         List<int> result = new();
         int indexTopLeft = (colour == Colour.White) ? (currentIndex + 7) : (currentIndex - 9);
+        
         if (Utility.IsValidIndex(indexTopLeft))
         {
-            byte pieceTopLeft = Board.square[indexTopLeft];
-            if ((!Utility.IsNonePiece(pieceTopLeft) || Utility.IsPiece(pieceTopLeft, Piece.EnPassant)) && !Utility.IsColour(pieceTopLeft, colour))
+            newPos = Utility.BoardIndexToWorldPos(indexTopLeft);
+            if (Mathf.Abs(newPos.x - currPos.x) <= 1)
             {
-                result.Add(indexTopLeft);
+                byte pieceTopLeft = Board.square[indexTopLeft];
+                if ((!Utility.IsNonePiece(pieceTopLeft) || Utility.IsPiece(pieceTopLeft, Piece.EnPassant)) && !Utility.IsColour(pieceTopLeft, colour))
+                {
+                    result.Add(indexTopLeft);
+                }
             }
         }
         int indexTopRight = (colour == Colour.White) ? (currentIndex + 9) : (currentIndex - 7);
         if (Utility.IsValidIndex(indexTopRight))
         {
-            byte pieceTopRight = Board.square[indexTopRight];
-            if ((!Utility.IsNonePiece(pieceTopRight) || Utility.IsPiece(pieceTopRight, Piece.EnPassant))
-                && !Utility.IsColour(pieceTopRight, colour))
-                result.Add(indexTopRight);
+            newPos = Utility.BoardIndexToWorldPos(indexTopRight);
+            if (Mathf.Abs(newPos.x - currPos.x) <= 1)
+            {
+                byte pieceTopRight = Board.square[indexTopRight];
+                if ((!Utility.IsNonePiece(pieceTopRight) || Utility.IsPiece(pieceTopRight, Piece.EnPassant))
+                    && !Utility.IsColour(pieceTopRight, colour))
+                    result.Add(indexTopRight);
+            }
         }
         int index1Forward = (colour == Colour.White) ? (currentIndex + 8) : (currentIndex - 8);
         if (Utility.IsValidIndex(index1Forward))
         {
-            byte piece1Forward = Board.square[index1Forward];
-            if (!Utility.IsNonePiece(piece1Forward))
-                return result;
-            result.Add(index1Forward);
+            newPos = Utility.BoardIndexToWorldPos(index1Forward);
+            if (Mathf.Abs(newPos.x - currPos.x) == 0)
+            {
+                byte piece1Forward = Board.square[index1Forward];
+                if (!Utility.IsNonePiece(piece1Forward))
+                    return result;
+                result.Add(index1Forward);
+            }
         }
         if (hasMoved)
             return result;
         int index2Forward = (colour == Colour.White) ? (currentIndex + 16) : (currentIndex - 16);
         if (Utility.IsValidIndex(index2Forward))
         {
-            byte piece2Forward = Board.square[index2Forward];
-            if (Utility.IsNonePiece(piece2Forward))
-                result.Add(index2Forward);
+            newPos = Utility.BoardIndexToWorldPos(index2Forward);
+            if (Mathf.Abs(newPos.x - currPos.x) == 0)
+            {
+                byte piece2Forward = Board.square[index2Forward];
+                if (Utility.IsNonePiece(piece2Forward))
+                    result.Add(index2Forward);
+            }
         }
         return result;
     }
