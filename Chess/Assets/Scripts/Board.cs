@@ -181,11 +181,14 @@ public sealed class Board
         return result;
     }
 
+    /// <summary>
+    /// Get the Forsyth-Edwards Notation (<b>FEN</b>) of a given position
+    /// </summary>
+    /// <param name="boardPosition">A byte array of the board position</param>
+    /// <returns>A string representation of the position using FEN</returns>
     public string GetFEN(byte[] boardPosition)
     {
-        string fen = "";
-
-        return fen;
+        throw new System.NotImplementedException();
     }
 
     /// <summary>
@@ -288,6 +291,12 @@ public sealed class Board
     {
         Object.Destroy(BoardManager.Instance.highlight);
     }
+
+    /// <summary>
+    /// Check for a mate of any kind, including checkmate and stalemate
+    /// </summary>
+    /// <param name="colour">The colour of the potentially losing king</param>
+    /// <returns>True if the position is a mate, otherwise false</returns>
     public static bool CheckForMate(Colour colour)
     {
         if (pieceObjs.Count < 3)
