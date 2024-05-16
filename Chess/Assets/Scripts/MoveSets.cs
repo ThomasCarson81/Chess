@@ -125,8 +125,9 @@ public static class MoveSets
         List<int> result = new();
         if (!hasMoved)
         {
-            if (Board.square[currentIndex+1] == Piece.None &&
+            if (Board.square[currentIndex + 1] == Piece.None &&
                 Board.square[currentIndex + 2] == Piece.None &&
+                Utility.IsPiece(Board.square[currentIndex + 3], Piece.Rook) &&
                 !Utility.HasMoved(Board.square[currentIndex + 3]))
             {
                 // short castle possible
@@ -135,6 +136,7 @@ public static class MoveSets
             if (Board.square[currentIndex - 1] == Piece.None &&
                 Board.square[currentIndex - 2] == Piece.None &&
                 Board.square[currentIndex - 3] == Piece.None &&
+                Utility.IsPiece(Board.square[currentIndex - 4], Piece.Rook) &&
                 !Utility.HasMoved(Board.square[currentIndex - 4]))
             {
                 // long castle possible

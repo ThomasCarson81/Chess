@@ -7,8 +7,7 @@ using UnityEngine;
 
 public sealed class Board
 {
-    //public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    public static string startFEN = "1k6/1q6/8/8/8/8/6Q1/6K1 w KQkq - 0 1";
+    public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public static int blackMaterial = 0;
@@ -257,7 +256,7 @@ public sealed class Board
                     return false;
             }
         }
-        int kingIndex = (colour == Colour.White) ? Board.whiteKingIndex : Board.blackKingIndex;
+        int kingIndex = (colour == Colour.White) ? whiteKingIndex : blackKingIndex;
         if (MoveSets.IsAttacked(kingIndex, colour))
         {
             Colour loser = (colour == Colour.White) ? Colour.Black : Colour.White;
