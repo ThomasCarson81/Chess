@@ -301,9 +301,8 @@ public sealed class Board
     public static bool CheckForMate(Colour colour)
     {
         // Insufficient Material
-        if (pieceObjs.Count < 3)
+        if (CheckForInsufficientMaterial())
         {
-            // insufficient material - TODO: add check for knights when checking for insufficient material
             BoardManager.Instance.Draw(DrawCause.InsufficientMaterial);
             return true;
         }
@@ -339,6 +338,114 @@ public sealed class Board
         return true;
     }
 
+    /// <summary>
+    /// Check if the game should end due to insufficient material
+    /// </summary>
+    /// <returns>True if the game should end, otherwise false</returns>
+    static bool CheckForInsufficientMaterial()
+    {
+        int whiteKnights = 0;
+        int blackKnights = 0;
+        int whiteBishops = 0;
+        int blackBishops = 0;
+        foreach (byte piece in square)
+        {
+            if (Utility.IsNonePiece(piece)) continue;
+            switch (Utility.TypeCode(piece))
+            {
+                case Piece.Pawn:
+                    return false;
+                case Piece.Rook:
+                    return false;
+                case Piece.Queen:
+                    return false;
+            }
+            if (Utility.IsColour(piece, Piece.White))
+            {
+                switch (Utility.TypeCode(piece))
+                {
+                    case Piece.Knight:
+                        whiteKnights++;
+                        break;
+                    case Piece.Bishop:
+                        whiteBishops++;
+                        break;
+                }
+            }
+            else
+            {
+                switch (Utility.TypeCode(piece))
+                {
+                    case Piece.Knight:
+                        blackKnights++;
+                        break;
+                    case Piece.Bishop:
+                        blackBishops++;
+                        break;
+                }
+            }
+        }
+        if (whiteBishops == 0 && blackBishops == 0)
+        {
+            // Only knights or lone kings
+            if (whiteKnights + blackKnights <= 1)
+                return true; // lone kings or knight vs lone king
+            if (whiteKnights > 1 && blackKnights > 0)
+                return true; // 2 (or more) knights vs lone king
+            if (blackKnights > 1 && whiteKnights > 0)
+                return true; // 2 (or more) knights vs lone king
+            if (whiteKnights == 1 && blackKnights == 1)
+                return true; // knight vs knight
+        }
+        if (blackKnights == 0 && whiteKnights == 0)
+        {
+            if (whiteBishops + blackBishops <= 1)
+                return true;
+            if (whiteBishops == 1 && blackBishops == 1)
+            {
+                int whiteBishopIndex = FindPiece(Piece.Bishop | Piece.White, square);
+                int blackBishopIndex = FindPiece(Piece.Bishop | Piece.Black, square);
+                bool whiteBishopIsLight, blackBishopIsLight;
+                if (whiteBishopIndex < 6)
+                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
+                else if (whiteBishopIndex < 16)
+                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
+                else if (whiteBishopIndex < 24)
+                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
+                else if (whiteBishopIndex < 32)
+                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
+                else if (whiteBishopIndex < 40)
+                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
+                else if (whiteBishopIndex < 48)
+                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
+                else if (whiteBishopIndex < 56)
+                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
+                else
+                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
+
+                if (blackBishopIndex < 6)
+                    blackBishopIsLight = blackBishopIndex % 2 != 0;
+                else if (blackBishopIndex < 16)
+                    blackBishopIsLight = blackBishopIndex % 2 == 0;
+                else if (blackBishopIndex < 24)
+                    blackBishopIsLight = blackBishopIndex % 2 != 0;
+                else if (blackBishopIndex < 32)
+                    blackBishopIsLight = blackBishopIndex % 2 == 0;
+                else if (blackBishopIndex < 40)
+                    blackBishopIsLight = blackBishopIndex % 2 != 0;
+                else if (blackBishopIndex < 48)
+                    blackBishopIsLight = blackBishopIndex % 2 == 0;
+                else if (blackBishopIndex < 56)
+                    blackBishopIsLight = blackBishopIndex % 2 != 0;
+                else
+                    blackBishopIsLight = blackBishopIndex % 2 == 0;
+
+                if (whiteBishopIsLight == blackBishopIsLight)
+                    return true;
+            }
+        }
+        return false;
+    }
 }
 public enum Colour
 {
