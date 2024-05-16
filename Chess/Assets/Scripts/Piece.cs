@@ -36,6 +36,7 @@ public class Piece : MonoBehaviour
     public Colour colour;
     public int boardIndex;
     public List<int> legalMoves = new();
+    float lastClickTime;
     private void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -276,6 +277,7 @@ public class Piece : MonoBehaviour
 
     private void OnMouseDown()
     {
+        lastClickTime = Time.time;
         if (Board.turn != colour || !Board.canClick) // it's not your turn, or someone is promoting
             return;
         if (!IsPickedUp())
@@ -337,5 +339,10 @@ public class Piece : MonoBehaviour
             }
         }
         
+    }
+    private void OnMouseUp()
+    {
+        if (Time.time - lastClickTime > .1f && IsPickedUp())
+            OnMouseDown();
     }
 }
