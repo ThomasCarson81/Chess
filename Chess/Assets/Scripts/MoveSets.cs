@@ -145,7 +145,9 @@ public static class MoveSets
         if (!hasMoved)
         {
             if (Board.square[currentIndex + 1] == Piece.None &&
+                !IsAttacked(currentIndex + 1, colour) &&
                 Board.square[currentIndex + 2] == Piece.None &&
+                !IsAttacked(currentIndex + 2, colour) &&
                 Utility.IsPiece(Board.square[currentIndex + 3], Piece.Rook) &&
                 !Utility.HasMoved(Board.square[currentIndex + 3]))
             {
@@ -153,8 +155,11 @@ public static class MoveSets
                 result.Add(currentIndex + 2);
             }
             if (Board.square[currentIndex - 1] == Piece.None &&
+                !IsAttacked(currentIndex - 1, colour) &&
                 Board.square[currentIndex - 2] == Piece.None &&
+                !IsAttacked(currentIndex - 2, colour) &&
                 Board.square[currentIndex - 3] == Piece.None &&
+                !IsAttacked(currentIndex - 3, colour) &&
                 Utility.IsPiece(Board.square[currentIndex - 4], Piece.Rook) &&
                 !Utility.HasMoved(Board.square[currentIndex - 4]))
             {
