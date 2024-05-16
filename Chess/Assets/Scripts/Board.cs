@@ -87,9 +87,9 @@ public sealed class Board
         bool blackCastleKingside = false;
         byte[] result = new byte[64];
         string[] splitFEN = fen.Split('/'); // "rnbqkbnr", "pppppppp", "8", "8", "8", "8", "PPPPPPPP", "RNBQKBNR w KQkq - 0 1"
-        string positionInfoStr = splitFEN[^1];
-        positionInfoStr.Replace(positionInfoStr.Split(' ')[0], ""); // " w KQkq - 0 1"
-        positionInfoStr.Replace(" ", ""); // "w KQkq - 0 1"
+        string positionInfoStr = splitFEN[^1]; 
+        positionInfoStr = positionInfoStr.Replace(positionInfoStr.Split(' ')[0], ""); // " w KQkq - 0 1"
+        positionInfoStr =  positionInfoStr.Remove(0, 1); // "w KQkq - 0 1"
         string[] positionInfoArr = positionInfoStr.Split(' '); // "w", "KQkq", "-", "0", "1"
         string turnStr = positionInfoArr[0]; // "w"
         string epLocation = positionInfoArr[2]; // "-" ("-" means none)
@@ -199,6 +199,7 @@ public sealed class Board
         turn = (turn == Colour.White) ? Colour.Black : Colour.White;
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
+        BoardManager.Instance.moveText.text = $"Move:\n{fullmoveNumber}";
     }
 
     /// <summary>
@@ -293,18 +294,25 @@ public sealed class Board
     }
 
     /// <summary>
-    /// Check for a mate of any kind, including checkmate and stalemate
+    /// Check for a mate of any kind, including checkmate, stalemate, or a draw of any other kind
     /// </summary>
     /// <param name="colour">The colour of the potentially losing king</param>
-    /// <returns>True if the position is a mate, otherwise false</returns>
+    /// <returns>True if the game should end, otherwise false</returns>
     public static bool CheckForMate(Colour colour)
     {
+        // Insufficient Material
         if (pieceObjs.Count < 3)
         {
             // insufficient material - TODO: add check for knights when checking for insufficient material
-            BoardManager.Instance.Stalemate();
+            BoardManager.Instance.Draw(DrawCause.InsufficientMaterial);
             return true;
         }
+
+        // 50 Move Rule
+        if (halfmoveClock >= 100) // 100 halfmoves = 50 moves
+            BoardManager.Instance.Draw(DrawCause.FiftyMoveRule);
+
+        // Stalemate
         for (int i = 0; i < square.Length; i++)
         {
             if (Utility.IsColour(square[i], colour))
@@ -316,6 +324,8 @@ public sealed class Board
                     return false;
             }
         }
+
+        // Checkmate
         int kingIndex = (colour == Colour.White) ? whiteKingIndex : blackKingIndex;
         if (MoveSets.IsAttacked(kingIndex, colour))
         {
@@ -324,7 +334,7 @@ public sealed class Board
         }
         else
         {
-            BoardManager.Instance.Stalemate();
+            BoardManager.Instance.Draw(DrawCause.Stalemate);
         }
         return true;
     }

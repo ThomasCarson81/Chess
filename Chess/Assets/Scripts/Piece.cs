@@ -244,6 +244,7 @@ public class Piece : MonoBehaviour
     {
         if (Utility.IsValidIndex(enemyIndex))
             Board.square[enemyIndex] = None;
+        Board.halfmoveClock = 0;
         Move(x, y, true, true, prevX, prevY, true, false);
         Board.ChangeTurn();
         Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
@@ -297,6 +298,12 @@ public class Piece : MonoBehaviour
             Board.RemoveHighlight();
             return;
         }
+        if (IsColour(Black))
+            Board.fullmoveNumber++;
+        if (IsPiece(Pawn))
+            Board.halfmoveClock = 0;
+        else
+            Board.halfmoveClock++; // will be set to 0 later if this move is a capture
         if (!legalMoves.Contains(Utility.WorldPosToBoardIndex(x, y)))
             return; // Illegal move
         Board.UnRenderMoveDots();

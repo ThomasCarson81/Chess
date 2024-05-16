@@ -31,6 +31,7 @@ public class BoardManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
     public TextMeshProUGUI mateText;
+    public TextMeshProUGUI moveText;
     public GameObject enPassentPiece;
     public GameObject highlight;
     public int enPassantIndex = -1;
@@ -174,11 +175,28 @@ public class BoardManager : MonoBehaviour
         Board.canClick = false;
         gameEndSound.Play();
     }
-    public void Stalemate()
+    public void Draw(DrawCause cause)
     {
-        mateText.text = $"Stalemate!";
+        switch (cause)
+        {
+            case DrawCause.Stalemate:
+                mateText.text = "Stalemate!\nOpponent has no moves";
+                break;
+            case DrawCause.InsufficientMaterial:
+                mateText.text = "Draw!\nDue to insufficient material";
+                break;
+            case DrawCause.FiftyMoveRule:
+                mateText.text = "Draw!\nDue to the 50 move rule";
+                break;
+        }
         mateText.enabled = true;
         Board.canClick = false;
         gameEndSound.Play();
     }
+}
+public enum DrawCause
+{
+    Stalemate,
+    InsufficientMaterial,
+    FiftyMoveRule
 }
