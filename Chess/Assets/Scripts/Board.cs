@@ -15,6 +15,9 @@ public sealed class Board
     public static List<GameObject> moveDots = new();
     public static int whiteKingIndex, blackKingIndex;
     public static bool canClick = true;
+    public static bool canMove = true;
+    public static int halfmoveClock = 0;
+    public static int fullmoveNumber = 0;
 
     public Board()
     {
@@ -83,11 +86,17 @@ public sealed class Board
         bool whiteCastleKingside = false;
         bool blackCastleKingside = false;
         byte[] result = new byte[64];
-        string[] splitFEN = fen.Split('/'); // "rnbqkbnr", "pppppppp", "8", "8", "8", "8", "PPPPPPPP", "RNBQKBNR w KQkq e3 0 1"
-        string turnStr = splitFEN[^1].Split(' ')[1];
-        string epLocation = splitFEN[^1].Split(' ')[3];
-        string castleAvailability = splitFEN[^1].Split(' ')[2];
-        splitFEN[^1] = splitFEN[^1].Split(' ')[0];
+        string[] splitFEN = fen.Split('/'); // "rnbqkbnr", "pppppppp", "8", "8", "8", "8", "PPPPPPPP", "RNBQKBNR w KQkq - 0 1"
+        string positionInfoStr = splitFEN[^1];
+        positionInfoStr.Replace(positionInfoStr.Split(' ')[0], ""); // " w KQkq - 0 1"
+        positionInfoStr.Replace(" ", ""); // "w KQkq - 0 1"
+        string[] positionInfoArr = positionInfoStr.Split(' '); // "w", "KQkq", "-", "0", "1"
+        string turnStr = positionInfoArr[0]; // "w"
+        string epLocation = positionInfoArr[2]; // "-" ("-" means none)
+        string castleAvailability = positionInfoArr[1]; // "KQkq"
+        halfmoveClock = int.TryParse(positionInfoArr[3], out halfmoveClock) ? halfmoveClock : 0;
+        fullmoveNumber = int.TryParse(positionInfoArr[4], out fullmoveNumber) ? fullmoveNumber : 1;
+        splitFEN[^1] = splitFEN[^1].Split(' ')[0]; // "rnbqkbnr", "pppppppp", "8", "8", "8", "8", "PPPPPPPP", "RNBQKBNR"
         if (char.ToLower(turnStr[0]) == 'b')
             ChangeTurn(); // turn is white by default, so change it if it should be black
         foreach (char c in castleAvailability)
@@ -146,16 +155,6 @@ public sealed class Board
                     whiteKings++;
                 else if (colour == Piece.Black && pieceType == Piece.King)
                     blackKings++;
-                string s = char.ToLower(c) switch
-                {
-                    'p' => "Pawn",
-                    'k' => "King",
-                    'n' => "Knight",
-                    'b' => "Bishop",
-                    'r' => "Rook",
-                    'q' => "Queen",
-                    _ => "Err: " + c.ToString() // illegal character in FEN, just add no piece
-                };
                 // place a piece with the specified colour at this position
                 result[index] = (byte)(pieceType | colour); 
                 index--;
