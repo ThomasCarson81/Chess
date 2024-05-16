@@ -241,7 +241,7 @@ public sealed class Board
     {
         if (pieceObjs.Count < 3)
         {
-            // insufficient material TODO: add check for knights when checking for insufficient material
+            // insufficient material - TODO: add check for knights when checking for insufficient material
             BoardManager.Instance.Stalemate();
             return true;
         }
@@ -268,6 +268,7 @@ public sealed class Board
         }
         return true;
     }
+
 }
 public enum Colour
 {

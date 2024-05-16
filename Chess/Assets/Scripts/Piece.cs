@@ -49,6 +49,10 @@ public class Piece : MonoBehaviour
             pos.z = -1;
             transform.position = pos;
         }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
     }
     public Sprite GetSpriteFromPieceCode(byte pieceCode)
     {
