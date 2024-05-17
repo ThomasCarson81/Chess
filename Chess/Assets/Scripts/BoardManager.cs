@@ -17,6 +17,10 @@ public class BoardManager : MonoBehaviour
     public Button knightButton;
     public Button rookButton;
     public Button bishopButton;
+    public Button getFenButton;
+    public Button setFenButton;
+    public Button defaultFenButton;
+    public Button startButton;
     public Image queenImg;
     public Image knightImg;
     public Image rookImg;
