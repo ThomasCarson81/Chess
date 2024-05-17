@@ -99,7 +99,6 @@ public class BoardManager : MonoBehaviour
         fenText.text = defaultFEN;
         SetFEN();
     }
-
     public void StartGame()
     {
         enPassantIndex = -1;

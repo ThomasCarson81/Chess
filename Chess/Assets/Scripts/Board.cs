@@ -44,8 +44,8 @@ public sealed class Board
             if (Utility.IsNonePiece(square[i])) continue;
             pieceObjs.Add(InstantiatePiece(i, square[i]));
         }
-        //CheckForMate(Colour.White);
-        //CheckForMate(Colour.Black);
+        CheckForMate(Colour.White);
+        CheckForMate(Colour.Black);
     }
 
     /// <summary>
