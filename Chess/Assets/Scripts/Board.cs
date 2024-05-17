@@ -405,8 +405,11 @@ public sealed class Board
             {
                 int whiteBishopIndex = FindPiece(Piece.Bishop | Piece.White, square);
                 int blackBishopIndex = FindPiece(Piece.Bishop | Piece.Black, square);
-                bool whiteBishopIsLight = ((whiteBishopIndex / 8) % 2 != whiteBishopIndex % 2);
-                bool blackBishopIsLight = ((blackBishopIndex / 8) % 2 != blackBishopIndex % 2);
+                // if the index of the square and
+                // the index of the square integer divided by 8 are both even or both odd,
+                // the square is dark, otherwise it is light
+                bool whiteBishopIsLight = whiteBishopIndex / 8 % 2 != whiteBishopIndex % 2;
+                bool blackBishopIsLight = blackBishopIndex / 8 % 2 != blackBishopIndex % 2;
                 
                 if (whiteBishopIsLight == blackBishopIsLight)
                     return true;
