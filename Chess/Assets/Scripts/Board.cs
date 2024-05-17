@@ -405,41 +405,9 @@ public sealed class Board
             {
                 int whiteBishopIndex = FindPiece(Piece.Bishop | Piece.White, square);
                 int blackBishopIndex = FindPiece(Piece.Bishop | Piece.Black, square);
-                bool whiteBishopIsLight, blackBishopIsLight;
-                if (whiteBishopIndex < 6)
-                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
-                else if (whiteBishopIndex < 16)
-                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
-                else if (whiteBishopIndex < 24)
-                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
-                else if (whiteBishopIndex < 32)
-                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
-                else if (whiteBishopIndex < 40)
-                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
-                else if (whiteBishopIndex < 48)
-                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
-                else if (whiteBishopIndex < 56)
-                    whiteBishopIsLight = whiteBishopIndex % 2 != 0;
-                else
-                    whiteBishopIsLight = whiteBishopIndex % 2 == 0;
-
-                if (blackBishopIndex < 6)
-                    blackBishopIsLight = blackBishopIndex % 2 != 0;
-                else if (blackBishopIndex < 16)
-                    blackBishopIsLight = blackBishopIndex % 2 == 0;
-                else if (blackBishopIndex < 24)
-                    blackBishopIsLight = blackBishopIndex % 2 != 0;
-                else if (blackBishopIndex < 32)
-                    blackBishopIsLight = blackBishopIndex % 2 == 0;
-                else if (blackBishopIndex < 40)
-                    blackBishopIsLight = blackBishopIndex % 2 != 0;
-                else if (blackBishopIndex < 48)
-                    blackBishopIsLight = blackBishopIndex % 2 == 0;
-                else if (blackBishopIndex < 56)
-                    blackBishopIsLight = blackBishopIndex % 2 != 0;
-                else
-                    blackBishopIsLight = blackBishopIndex % 2 == 0;
-
+                bool whiteBishopIsLight = ((whiteBishopIndex / 8) % 2 != whiteBishopIndex % 2);
+                bool blackBishopIsLight = ((blackBishopIndex / 8) % 2 != blackBishopIndex % 2);
+                
                 if (whiteBishopIsLight == blackBishopIsLight)
                     return true;
             }
