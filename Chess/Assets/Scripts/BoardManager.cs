@@ -48,6 +48,10 @@ public class BoardManager : MonoBehaviour
     public AudioSource gameEndSound;
     public byte chosenPiece = Piece.None;
     public Piece promotingPiece = null;
+
+    public static string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    public static string startFEN = defaultFEN;
+
     void Awake()
     {
         if (Instance == null)
@@ -71,6 +75,29 @@ public class BoardManager : MonoBehaviour
         string fen = Board.GetFEN(Board.square);
         fenText.text = fen;
         Debug.Log(fen);
+    }
+
+    public void SetFEN()
+    {
+        startFEN = fenText.text;
+        try
+        {
+            Board.PositionFromFEN(startFEN);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(startFEN);
+            Debug.Log(e.Message);
+            Debug.Log(e.StackTrace);
+            startFEN = defaultFEN;
+            fenText.text = "ERROR";
+        }
+    }
+
+    public void DefaultFEN()
+    {
+        fenText.text = defaultFEN;
+        SetFEN();
     }
 
     public void StartGame()

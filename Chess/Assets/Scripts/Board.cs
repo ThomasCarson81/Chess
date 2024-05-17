@@ -6,7 +6,6 @@ using UnityEngine;
 
 public sealed class Board
 {
-    public static string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
     public static int blackMaterial = 0;
@@ -21,7 +20,6 @@ public sealed class Board
 
     public Board()
     {
-        startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         square = new byte[64];
         foreach (GameObject obj in pieceObjs)
         {
@@ -37,7 +35,7 @@ public sealed class Board
         canMove = true;
         halfmoveClock = 0;
         fullmoveNumber = 0;
-        square = PositionFromFEN(startFEN);
+        square = PositionFromFEN(BoardManager.startFEN);
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
         BoardManager.Instance.moveText.text = $"Move:\n{fullmoveNumber}";
@@ -46,6 +44,8 @@ public sealed class Board
             if (Utility.IsNonePiece(square[i])) continue;
             pieceObjs.Add(InstantiatePiece(i, square[i]));
         }
+        //CheckForMate(Colour.White);
+        //CheckForMate(Colour.Black);
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public sealed class Board
     /// </summary>
     /// <param name="fen">the string of the FEN notation</param>
     /// <returns>The corresponding board position</returns>
-    byte[] PositionFromFEN(string fen)
+    public static byte[] PositionFromFEN(string fen)
     {
         bool whiteCastleQueenside = false;
         bool blackCastleQueenside = false;
@@ -169,6 +169,8 @@ public sealed class Board
                     'q' => Piece.Queen,
                     _ => Piece.None // illegal character in FEN, just add no piece
                 };
+                if (pieceType == Piece.None)
+                    throw new System.Exception("Illegal character in FEN");
                 if (colour == Piece.White && pieceType == Piece.King)
                     whiteKings++;
                 else if (colour == Piece.Black && pieceType == Piece.King)
@@ -179,7 +181,7 @@ public sealed class Board
             }
         }
         if (whiteKings != 1 || blackKings != 1)
-            Debug.LogError("Please use exactly 1 of each colour king");
+            throw new System.Exception("FEN must have exactly 1 of each colour king.");
         int epIndex = -1;
         if (epLocation != "-")
             epIndex = Utility.NotationToBoardIndex(epLocation);
