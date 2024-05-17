@@ -23,9 +23,14 @@ public sealed class Board
     {
         startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         square = new byte[64];
+        foreach (GameObject obj in pieceObjs)
+        {
+            Object.Destroy(obj);
+        }
         pieceObjs = new();
         blackMaterial = 0;
         whiteMaterial = 0;
+        BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
         turn = Colour.White;
         moveDots = new();
         canClick = true;
@@ -33,6 +38,9 @@ public sealed class Board
         halfmoveClock = 0;
         fullmoveNumber = 0;
         square = PositionFromFEN(startFEN);
+        string turnStr = (turn == Colour.White) ? "White" : "Black";
+        BoardManager.Instance.turnText.text = $"{turnStr} to move";
+        BoardManager.Instance.moveText.text = $"Move:\n{fullmoveNumber}";
         for (int i = 0; i < square.Length; i++)
         {
             if (Utility.IsNonePiece(square[i])) continue;
