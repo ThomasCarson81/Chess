@@ -135,7 +135,6 @@ public sealed class Board
                     blackCastleKingside = true;
                     break;
                 default:
-                    Debug.LogError("Invalid FEN in castle availability!");
                     break;
             }
         }
@@ -322,8 +321,9 @@ public sealed class Board
 
         fen += ' ';
         fen += moveChar;
-        if (castleAvailability != "")
-            fen += ' ' + castleAvailability;
+        if (castleAvailability == "")
+            castleAvailability = "-";
+        fen += ' ' + castleAvailability;
         if (BoardManager.Instance.enPassantIndex == -1)
             fen += " -";
         else
