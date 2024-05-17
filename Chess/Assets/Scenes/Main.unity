@@ -1512,6 +1512,7 @@ MonoBehaviour:
   setFenButton: {fileID: 847627266}
   defaultFenButton: {fileID: 2098498880}
   startButton: {fileID: 1006423758}
+  fenText: {fileID: 382021538}
   queenImg: {fileID: 544098706}
   knightImg: {fileID: 2026418015}
   rookImg: {fileID: 1788867667}
@@ -3433,7 +3434,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2084455472}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1221999589}
+        m_TargetAssemblyTypeName: BoardManager, Assembly-CSharp
+        m_MethodName: GetFEN
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2084455472
 MonoBehaviour:
   m_ObjectHideFlags: 0

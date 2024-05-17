@@ -21,6 +21,17 @@ public sealed class Board
 
     public Board()
     {
+        startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        square = new byte[64];
+        pieceObjs = new();
+        blackMaterial = 0;
+        whiteMaterial = 0;
+        turn = Colour.White;
+        moveDots = new();
+        canClick = true;
+        canMove = true;
+        halfmoveClock = 0;
+        fullmoveNumber = 0;
         square = PositionFromFEN(startFEN);
         for (int i = 0; i < square.Length; i++)
         {
@@ -186,9 +197,135 @@ public sealed class Board
     /// </summary>
     /// <param name="boardPosition">A byte array of the board position</param>
     /// <returns>A string representation of the position using FEN</returns>
-    public string GetFEN(byte[] boardPosition)
+    public static string GetFEN(byte[] boardPosition)
     {
-        throw new System.NotImplementedException();
+        string fen = "";
+        int skips = 0;
+        for (int i = 56; i >= 0; i++)
+        {
+            byte piece = boardPosition[i];
+            if (Utility.IsNonePiece(piece))
+            {
+                skips++;
+                if (i % 8 == 7)
+                {
+                    fen += skips.ToString();
+                    skips = 0;
+                    fen += '/';
+                    i -= 16;
+                }
+                continue;
+            }
+            if (skips > 0)
+            {
+                fen += skips.ToString();
+                skips = 0;
+            }
+            char pieceChar = Utility.TypeCode(piece) switch
+            {
+                Piece.Pawn => 'p',
+                Piece.Rook => 'r',
+                Piece.Knight => 'n',
+                Piece.Bishop => 'b',
+                Piece.Queen => 'q',
+                Piece.King => 'k',
+                _ => '?'
+            };
+            if (Utility.IsColour(piece, Piece.White))
+            {
+                pieceChar = char.ToUpper(pieceChar);
+            }
+            fen += pieceChar;
+            if (i % 8 == 7)
+            {
+                fen += '/';
+                i -= 16;
+            }
+        }
+        fen = fen.Remove(fen.Length - 1); // remove trailing '/'
+        char moveChar = (turn == Colour.White) ? 'w' : 'b';
+        string castleAvailability = "";
+        int whiteKingIndex = FindPiece(Piece.King | Piece.White, boardPosition);
+        int blackKingIndex = FindPiece(Piece.King | Piece.Black, boardPosition);
+        bool wK = true, wQ = true, bK = true, bQ = true; // white & black kingside & queenside castle availability
+
+        // castling only works when the king has not moved
+        if (whiteKingIndex != 4 && !Utility.HasMoved(boardPosition[whiteKingIndex]))
+        {
+            wK = false;
+            wQ = false;
+        }
+        else
+        {
+            // white queenside castling is only available when
+            // there is a white rook on a1 which has not moved
+            if (!Utility.IsColour(boardPosition[0], Piece.White) ||
+                !Utility.IsPiece(boardPosition[0], Piece.Rook) ||
+                Utility.HasMoved(boardPosition[0])
+                )
+            {
+                wQ = false;
+            }
+            // white kingside castling is only available when
+            // there is a white rook on h1 which has not moved
+            if (!Utility.IsColour(boardPosition[7], Piece.White) ||
+                !Utility.IsPiece(boardPosition[7], Piece.Rook) ||
+                Utility.HasMoved(boardPosition[7])
+                )
+            {
+                wK = false;
+            }
+        }
+        // castling only works when the king has not moved
+        if (blackKingIndex != 60 && !Utility.HasMoved(boardPosition[whiteKingIndex]))
+        {
+            bK = false;
+            bQ = false;
+        }
+        else
+        {
+            // black queenside castling is only available when
+            // there is a black rook on a8 which has not moved
+            if (!Utility.IsColour(boardPosition[56], Piece.Black) ||
+                !Utility.IsPiece(boardPosition[56], Piece.Rook) ||
+                Utility.HasMoved(boardPosition[56])
+                )
+            {
+                bQ = false;
+            }
+            // black kingside castling is only available when
+            // there is a black rook on h8 which has not moved
+            if (!Utility.IsColour(boardPosition[63], Piece.Black) ||
+                !Utility.IsPiece(boardPosition[63], Piece.Rook) ||
+                Utility.HasMoved(boardPosition[63])
+                )
+            {
+                bK = false;
+            }
+        }
+        if (wK)
+            castleAvailability += 'K';
+        if (wQ)
+            castleAvailability += 'Q';
+        if (bK)
+            castleAvailability += 'k';
+        if (bQ)
+            castleAvailability += 'q';
+
+        fen += ' ';
+        fen += moveChar;
+        if (castleAvailability != "")
+            fen += ' ' + castleAvailability;
+        if (BoardManager.Instance.enPassantIndex == -1)
+        {
+            fen += " -";
+        }
+        else
+        {
+            fen += $" {Utility.BoardIndexToNotation(BoardManager.Instance.enPassantIndex)}";
+        }
+        fen += $" {halfmoveClock} {fullmoveNumber}";
+        return fen;
     }
 
     /// <summary>

@@ -21,6 +21,7 @@ public class BoardManager : MonoBehaviour
     public Button setFenButton;
     public Button defaultFenButton;
     public Button startButton;
+    public TMP_InputField fenText;
     public Image queenImg;
     public Image knightImg;
     public Image rookImg;
@@ -62,6 +63,21 @@ public class BoardManager : MonoBehaviour
         {
             Instance = this;
         }
+        StartGame();
+    }
+
+    public void GetFEN()
+    {
+        string fen = Board.GetFEN(Board.square);
+        fenText.text = fen;
+        Debug.Log(fen);
+    }
+
+    public void StartGame()
+    {
+        enPassantIndex = -1;
+        chosenPiece = Piece.None;
+        promotingPiece = null;
         board = new();
         mateText.enabled = false;
         HideButtons();
