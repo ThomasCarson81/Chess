@@ -142,7 +142,7 @@ public static class MoveSets
     public static List<int> CalculateKingMoves(int currentIndex, Colour colour, bool hasMoved)
     {
         List<int> result = new();
-        if (!hasMoved)
+        if (!hasMoved && !IsAttacked(currentIndex, colour))
         {
             if (Board.square[currentIndex + 1] == Piece.None &&
                 !IsAttacked(currentIndex + 1, colour) &&
