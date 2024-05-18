@@ -47,7 +47,7 @@ public class Piece : MonoBehaviour
         if (IsPickedUp())
         {
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            pos.z = -1;
+            pos.z = -3;
             transform.position = pos;
         }
         if (Input.GetKeyDown(KeyCode.Escape))

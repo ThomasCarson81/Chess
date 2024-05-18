@@ -363,7 +363,9 @@ public sealed class Board
         {
             if (i < 0 || i >= 64) continue;
             GameObject dot = Object.Instantiate(BoardManager.Instance.moveDotPrefab);
-            dot.transform.position = Utility.BoardIndexToWorldPos(i);
+            Vector3 pos = Utility.BoardIndexToWorldPos(i);
+            pos.z = -2;
+            dot.transform.position = pos;
             moveDots.Add(dot);
         }
     }
