@@ -567,18 +567,7 @@ public sealed class Board
         foreach (byte pc in boardPosition)
         {
             if (Utility.IsColour(pc, colour))
-            {
-                material += Utility.TypeCode(pc) switch
-                {
-                    Piece.Pawn => 1,
-                    Piece.King => 1,
-                    Piece.Knight => 3,
-                    Piece.Bishop => 3,
-                    Piece.Rook => 5,
-                    Piece.Queen => 9,
-                    _ => 0
-                };
-            }
+                material += Utility.GetMaterial(pc);
         }
         return material;
     }
