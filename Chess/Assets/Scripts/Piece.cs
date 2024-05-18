@@ -247,7 +247,7 @@ public class Piece : MonoBehaviour
         Board.halfmoveClock = 0;
         Move(x, y, true, true, prevX, prevY, true, false);
         Board.ChangeTurn();
-        Board.AddMaterial(Utility.GetMaterial(enemyCode), colour);
+        Board.UpdateMaterial();
         Board.pieceObjs.Remove(enemyObj);
         Destroy(enemyObj);
         int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;

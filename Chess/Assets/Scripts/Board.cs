@@ -46,6 +46,7 @@ public sealed class Board
         }
         CheckForMate(Colour.White);
         CheckForMate(Colour.Black);
+        UpdateMaterial();
     }
 
     /// <summary>
@@ -79,18 +80,24 @@ public sealed class Board
     /// </summary>
     /// <param name="material">The number of points to add</param>
     /// <param name="colour">The player to add it to</param>
-    public static void AddMaterial(int material, Colour colour)
+    public static void UpdateMaterial()
     {
-        switch (colour)
+        int dif = GetMaterialDifference(square);
+        if (dif == 0)
         {
-            case Colour.Black:
-                blackMaterial += material;
-                break;
-            case Colour.White: 
-                whiteMaterial += material;
-                break;
+            BoardManager.Instance.scoreText.text = $"Material:\n- - -";
+            return;
         }
-        BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
+        if (dif > 0)
+        {
+            BoardManager.Instance.scoreText.text = $"Material:\nWhite +{dif}";
+            return;
+        }
+        if (dif < 0)
+        {
+            BoardManager.Instance.scoreText.text = $"Material:\nBlack +{-dif}";
+            return;
+        }
     }
 
     /// <summary>
