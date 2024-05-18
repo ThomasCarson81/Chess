@@ -116,7 +116,7 @@ public sealed class Board
         halfmoveClock = int.TryParse(positionInfoArr[3], out halfmoveClock) ? halfmoveClock : 0;
         fullmoveNumber = int.TryParse(positionInfoArr[4], out fullmoveNumber) ? fullmoveNumber : 1;
         splitFEN[^1] = splitFEN[^1].Split(' ')[0]; // "rnbqkbnr", "pppppppp", "8", "8", "8", "8", "PPPPPPPP", "RNBQKBNR"
-        if (char.ToLower(turnStr[0]) == 'b')
+        if (char.ToLower(turnStr[0]) == 'b' && turn == Colour.White)
             ChangeTurn(); // turn is white by default, so change it if it should be black
         foreach (char c in castleAvailability)
         {
@@ -560,6 +560,32 @@ public sealed class Board
             }
         }
         return false;
+    }
+    static int GetMaterial(Colour colour, byte[] boardPosition)
+    {
+        int material = 0;
+        foreach (byte pc in boardPosition)
+        {
+            if (Utility.IsColour(pc, colour))
+            {
+                material += Utility.TypeCode(pc) switch
+                {
+                    Piece.Pawn => 1,
+                    Piece.King => 1,
+                    Piece.Knight => 3,
+                    Piece.Bishop => 3,
+                    Piece.Rook => 5,
+                    Piece.Queen => 9,
+                    _ => 0
+                };
+            }
+        }
+        return material;
+    }
+
+    static int GetMaterialDifference(byte[] boardPosition)
+    {
+        return GetMaterial(Colour.White, boardPosition) - GetMaterial(Colour.Black, boardPosition);
     }
 }
 public enum Colour
