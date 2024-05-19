@@ -20,6 +20,16 @@ public sealed class Board
 
     public Board()
     {
+        if (BoardManager.botMode)
+        {
+            BoardManager.Instance.botText.enabled = true;
+            BoardManager.Instance.playerText.enabled = true;
+        }
+        else
+        {
+            BoardManager.Instance.botText.enabled = false;
+            BoardManager.Instance.playerText.enabled = false;
+        }
         square = new byte[64];
         foreach (GameObject obj in pieceObjs)
         {

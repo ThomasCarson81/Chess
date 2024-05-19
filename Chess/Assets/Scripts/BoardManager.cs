@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BoardManager : MonoBehaviour
@@ -37,6 +38,8 @@ public class BoardManager : MonoBehaviour
     public TextMeshProUGUI turnText;
     public TextMeshProUGUI mateText;
     public TextMeshProUGUI moveText;
+    public TextMeshProUGUI botText;
+    public TextMeshProUGUI playerText;
     public GameObject enPassentPiece;
     public GameObject highlight;
     public int enPassantIndex = -1;
@@ -48,7 +51,7 @@ public class BoardManager : MonoBehaviour
     public AudioSource gameEndSound;
     public byte chosenPiece = Piece.None;
     public Piece promotingPiece = null;
-    public static bool botMode;
+    public static bool botMode = false;
 
     public static string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static string startFEN = defaultFEN;
@@ -240,7 +243,11 @@ public class BoardManager : MonoBehaviour
         Board.canClick = false;
         gameEndSound.Play();
     }
-    public void QuitGame()
+    public void GotoMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+    public void Quit()
     {
         Application.Quit();
     }

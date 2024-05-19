@@ -10,4 +10,8 @@ public class MenuManager : MonoBehaviour
         BoardManager.botMode = botMode;
         SceneManager.LoadScene(1);
     }
+    public void Quit()
+    {
+        Application.Quit();
+    }
 }
