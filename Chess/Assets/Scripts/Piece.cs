@@ -240,7 +240,7 @@ public class Piece : MonoBehaviour
     /// <param name="enemyIndex">The board index of the piece to be captured</param>
     /// <param name="x">The x position in Unity world space to move to after the opponent has been captured</param>
     /// <param name="y">The y position in Unity world space to move to after the opponent has been captured</param>
-    private void Capture(GameObject enemyObj, byte enemyCode, int enemyIndex, float x, float y)
+    private void Capture(GameObject enemyObj, int enemyIndex, float x, float y)
     {
         if (Utility.IsValidIndex(enemyIndex))
             Board.square[enemyIndex] = None;
@@ -316,14 +316,14 @@ public class Piece : MonoBehaviour
 
         if (!Utility.IsNonePiece(targetSquareCode)) // if it's a capture
         { 
-            Capture(Utility.PieceObjectAtWorldPos(x, y), targetSquareCode, -1, x, y);
+            Capture(Utility.PieceObjectAtWorldPos(x, y), -1, x, y);
         }
         else if (Utility.IsPiece(targetSquareCode, EnPassant) && IsPiece(Pawn))
         {
             // if it's an En Passant capture
             float enemyY = (colour == Colour.Black) ? y + 1 : y - 1;
             int targetIndex = Utility.WorldPosToBoardIndex(x, enemyY);
-            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetSquareCode, targetIndex, x, y);
+            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetIndex, x, y);
         }
         else
         {
