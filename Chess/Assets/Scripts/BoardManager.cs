@@ -239,6 +239,10 @@ public class BoardManager : MonoBehaviour
         Board.canClick = false;
         gameEndSound.Play();
     }
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 }
 public enum DrawCause
 {
