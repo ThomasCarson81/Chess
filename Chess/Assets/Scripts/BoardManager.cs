@@ -48,6 +48,7 @@ public class BoardManager : MonoBehaviour
     public AudioSource gameEndSound;
     public byte chosenPiece = Piece.None;
     public Piece promotingPiece = null;
+    public static bool botMode;
 
     public static string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static string startFEN = defaultFEN;
