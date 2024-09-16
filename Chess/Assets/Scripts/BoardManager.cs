@@ -11,9 +11,14 @@ public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance { get; private set; }
     public Board board;
+    #region GameObjects
     public GameObject piecePrefab;
     public GameObject moveDotPrefab;
     public GameObject highlightPrefab;
+    public GameObject enPassentPiece;
+    public GameObject highlight;
+    #endregion
+    #region InputObjects
     public Button queenButton;
     public Button knightButton;
     public Button rookButton;
@@ -23,6 +28,8 @@ public class BoardManager : MonoBehaviour
     public Button defaultFenButton;
     public Button startButton;
     public TMP_InputField fenText;
+    #endregion
+    #region Images
     public Image queenImg;
     public Image knightImg;
     public Image rookImg;
@@ -34,24 +41,28 @@ public class BoardManager : MonoBehaviour
     public Sprite[] queenSprites;
     public Sprite[] kingSprites;
     public Sprite errorSprite;
+    #endregion
+    #region Texts
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI turnText;
     public TextMeshProUGUI mateText;
     public TextMeshProUGUI moveText;
     public TextMeshProUGUI botText;
     public TextMeshProUGUI playerText;
-    public GameObject enPassentPiece;
-    public GameObject highlight;
-    public int enPassantIndex = -1;
+    #endregion
+    #region AudioSources
     public AudioSource moveSound;
     public AudioSource captureSound;
     public AudioSource checkSound;
     public AudioSource castleSound;
     public AudioSource promoteSound;
     public AudioSource gameEndSound;
+    #endregion
+
     public byte chosenPiece = Piece.None;
     public Piece promotingPiece = null;
     public static bool botMode = false;
+    public int enPassantIndex = -1;
 
     public static string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static string startFEN = defaultFEN;
@@ -103,6 +114,7 @@ public class BoardManager : MonoBehaviour
         fenText.text = defaultFEN;
         SetFEN();
     }
+
     public void StartGame()
     {
         enPassantIndex = -1;
@@ -112,26 +124,31 @@ public class BoardManager : MonoBehaviour
         mateText.enabled = false;
         HideButtons();
     }
+
     public void OnChooseQueen()
     {
         chosenPiece = Piece.Queen;
         Promote();
     }
+
     public void OnChooseKnight()
     {
         chosenPiece = Piece.Knight;
         Promote();
     }
+
     public void OnChooseRook()
     {
         chosenPiece = Piece.Rook;
         Promote();
     }
+
     public void OnChooseBishop()
     {
         chosenPiece = Piece.Bishop;
         Promote();
     }
+
     public void DisplayButtons()
     {
         if (promotingPiece == null)
@@ -163,6 +180,7 @@ public class BoardManager : MonoBehaviour
         bishopButton.enabled = true;
         Board.canClick = false;
     }
+
     public void HideButtons()
     {
         queenImg.enabled = false;
@@ -175,6 +193,7 @@ public class BoardManager : MonoBehaviour
         bishopButton.enabled = false;
         Board.canClick = true;
     }
+
     public void Promote()
     {
         HideButtons();
@@ -218,6 +237,7 @@ public class BoardManager : MonoBehaviour
             promoteSound.Play();    
         }
     }
+
     public void Checkmate(Colour winner)
     {
         mateText.text = $"Checkmate! {winner} wins!";
@@ -225,6 +245,7 @@ public class BoardManager : MonoBehaviour
         Board.canClick = false;
         gameEndSound.Play();
     }
+
     public void Draw(DrawCause cause)
     {
         switch (cause)
@@ -243,10 +264,12 @@ public class BoardManager : MonoBehaviour
         Board.canClick = false;
         gameEndSound.Play();
     }
+
     public void GotoMenu()
     {
         SceneManager.LoadScene(0);
     }
+
     public void Quit()
     {
         Application.Quit();

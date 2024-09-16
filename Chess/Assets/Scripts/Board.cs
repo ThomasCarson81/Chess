@@ -8,8 +8,6 @@ public sealed class Board
 {
     public static byte[] square = new byte[64];
     public static List<GameObject> pieceObjs = new();
-    public static int blackMaterial = 0;
-    public static int whiteMaterial = 0;
     public static Colour turn = Colour.White;
     public static List<GameObject> moveDots = new();
     public static int whiteKingIndex, blackKingIndex;
@@ -36,9 +34,6 @@ public sealed class Board
             Object.Destroy(obj);
         }
         pieceObjs = new();
-        blackMaterial = 0;
-        whiteMaterial = 0;
-        BoardManager.Instance.scoreText.text = $"White: {whiteMaterial}\nBlack: {blackMaterial}";
         turn = Colour.White;
         moveDots = new();
         canClick = true;
@@ -360,6 +355,11 @@ public sealed class Board
         string turnStr = (turn == Colour.White) ? "White" : "Black";
         BoardManager.Instance.turnText.text = $"{turnStr} to move";
         BoardManager.Instance.moveText.text = $"Move:\n{fullmoveNumber}";
+        if (BoardManager.botMode && turn == Colour.Black)
+        {
+            BotMove();
+        }
+        EvalPosition(square);
     }
 
     /// <summary>
@@ -479,8 +479,22 @@ public sealed class Board
             if (Utility.IsColour(square[i], colour))
             {
                 Vector3 pos = Utility.BoardIndexToWorldPos(i);
-                if (!Utility.PieceObjectAtWorldPos(pos.x, pos.y).TryGetComponent<Piece>(out var pc))
+                GameObject obj = Utility.PieceObjectAtWorldPos(pos.x, pos.y);
+                if (obj == null)
+                {
+                    Debug.Log($"stalemate check: no piece at ({pos.x},{pos.y})");
+                    return false;
+                }
+                if (pos == null)
+                {
+                    Debug.Log("pos = null");
+                }
+                if (!obj.TryGetComponent<Piece>(out var pc))
                     Debug.LogError("Piece with no script detected");
+                if (pc == null)
+                {
+                    Debug.Log("pc = null");
+                }
                 if (pc.CalculateMoves().Count > 0)
                     return false;
             }
@@ -498,6 +512,99 @@ public sealed class Board
             BoardManager.Instance.Draw(DrawCause.Stalemate);
         }
         return true;
+    }
+
+    public static void BotMove()
+    {
+        List<Move> structMoves = new();
+
+        for (int i = 0; i < square.Length; i++)
+        {
+            if (Utility.IsColour(square[i], Colour.Black))
+            {
+                List<int> intMoves = new();
+                switch (Utility.TypeCode(square[i]))
+                {
+                    case Piece.Pawn:
+                        intMoves.AddRange(MoveSets.CalculatePawnMoves(i, Colour.Black, Utility.HasMoved(square[i])));
+                        break;
+                    case Piece.Rook:
+                        intMoves.AddRange(MoveSets.CalculateRookMoves(i, Colour.Black));
+                        break;
+                    case Piece.Knight:
+                        intMoves.AddRange(MoveSets.CalculateKnightMoves(i, Colour.Black));
+                        break;
+                    case Piece.Bishop:
+                        intMoves.AddRange(MoveSets.CalculateBishopMoves(i, Colour.Black));
+                        break;
+                    case Piece.Queen:
+                        intMoves.AddRange(MoveSets.CalculateQueenMoves(i, Colour.Black));
+                        break;
+                    case Piece.King:
+                        intMoves.AddRange(MoveSets.CalculateKingMoves(i, Colour.Black, Utility.HasMoved(square[i])));
+                        break;
+                }
+                foreach (int intMove in intMoves)
+                {
+                    byte[] theoryPos = (byte[])square.Clone();
+                    theoryPos[intMove] = theoryPos[i];
+                    theoryPos[i] = Piece.None;
+                    int rating = EvalPosition(theoryPos);
+                    structMoves.Add(new Move(i, intMove, rating));
+                    Debug.Log($"new move: {i}-{intMove}: {rating}");
+                }
+            }
+        }
+        int bestMove = 0;
+        for (int j = 0; j < structMoves.Count; j++)
+        {
+            if (structMoves[j].rating < structMoves[bestMove].rating)
+            {
+                bestMove = j;
+            }
+        }
+        //Debug.Log($"best move: {structMoves[bestMove].oldPos} to {structMoves[bestMove].newPos}, rating={structMoves[bestMove].rating}");
+        Vector3 oldPiecePos = Utility.BoardIndexToWorldPos(structMoves[bestMove].oldPos);
+        Vector3 newPiecePos = Utility.BoardIndexToWorldPos(structMoves[bestMove].newPos);
+        GameObject botObj = Utility.PieceObjectAtWorldPos(oldPiecePos.x, oldPiecePos.y);
+        if (botObj == null)
+        {
+            Debug.Log($"no piece at ({oldPiecePos.x},{oldPiecePos.y})");
+        }
+        Piece botPiece = botObj.GetComponent<Piece>();
+        if (square[structMoves[bestMove].newPos] == Piece.None)
+        {
+            botPiece.Move(newPiecePos.x, newPiecePos.y, true, false, oldPiecePos.x, oldPiecePos.y, true, false, square);
+        }
+        else
+        {
+            GameObject enemyObj = Utility.PieceObjectAtWorldPos(newPiecePos.x, newPiecePos.y);
+            int enemyIndex = structMoves[bestMove].newPos;
+            botPiece.Capture(enemyObj, enemyIndex, newPiecePos.x, newPiecePos.y, square);
+        }
+        if (CheckForMate(Colour.Black))
+        {
+            Debug.Log("Checkmate! White wins");
+            return;
+        }
+        if (CheckForMate(Colour.White))
+        {
+            Debug.Log("Checkmate! Black wins");
+            return;
+        }
+        if (CheckForInsufficientMaterial())
+        {
+            Debug.Log("Draw due to insufficient material.");
+            return;
+        }
+        ChangeTurn();
+    }
+
+    public static int EvalPosition(byte[] boardPosition)
+    {
+        // currently this method returns the result of GetMaterialDifference,
+        // therefore it is not a good way of evaluating a position.
+        return GetMaterialDifference(boardPosition);
     }
 
     /// <summary>
@@ -580,6 +687,7 @@ public sealed class Board
         }
         return false;
     }
+
     static int GetMaterial(Colour colour, byte[] boardPosition)
     {
         int material = 0;
@@ -600,4 +708,22 @@ public enum Colour
 {
     Black = 0,
     White = 1
+}
+public struct Move
+{
+    public int oldPos;
+    public int newPos;
+    public int rating;
+    public Move(int oldPos, int newPos)
+    {
+        this.oldPos = oldPos;
+        this.newPos = newPos;
+        rating = 0;
+    }
+    public Move(int oldPos, int newPos, int rating)
+    {
+        this.oldPos = oldPos;
+        this.newPos = newPos;
+        this.rating = rating;
+    }
 }

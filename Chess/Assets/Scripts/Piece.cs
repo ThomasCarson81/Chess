@@ -126,29 +126,30 @@ public class Piece : MonoBehaviour
     /// <param name="prevY">The previous y position in world space of the piece</param>
     /// <param name="doEnPassant">Whether or not to account for En Passant in the move</param>
     /// <param name="doPrint">Whether or not to Debug.Log() the board position after the move</param>
+    /// <param name="boardPosition">The board on which to play the move</param>
     /// <returns>Whether or not sounds should be played, this will be false if a sound was played during Move()</returns>
-    public bool Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant, bool doPrint)
+    public bool Move(float x, float y, bool updateHasMoved, bool updatePickedUp, float prevX, float prevY, bool doEnPassant, bool doPrint, byte[] boardPosition)
     {
         bool playSound = true;
         transform.position = new Vector3(x, y, 0);
         if (updatePickedUp)
             pieceCode ^= (byte)(pieceCode & PickedUp);
-        Board.square[boardIndex] = 0;
+        boardPosition[boardIndex] = 0;
         boardIndex = Utility.WorldPosToBoardIndex(x, y);
-        Board.square[boardIndex] = pieceCode;
+        boardPosition[boardIndex] = pieceCode;
         if (IsPiece(King))
         {
             if (x - prevX == 2)
             {
                 // short castled
-                Utility.PieceObjectAtWorldPos(x + 1, y).GetComponent<Piece>().Move(x - 1, y, true, false, x + 1, y, true, false);
+                Utility.PieceObjectAtWorldPos(x + 1, y).GetComponent<Piece>().Move(x - 1, y, true, false, x + 1, y, true, false, boardPosition);
                 BoardManager.Instance.castleSound.Play();
                 playSound = false;
             }
             else if (x - prevX == -2)
             {
                 // long castled
-                Utility.PieceObjectAtWorldPos(x - 2, y).GetComponent<Piece>().Move(x + 1, y, true, false, x - 2, y, true, false);
+                Utility.PieceObjectAtWorldPos(x - 2, y).GetComponent<Piece>().Move(x + 1, y, true, false, x - 2, y, true, false, boardPosition);
                 BoardManager.Instance.castleSound.Play();
                 playSound = false;
             }
@@ -166,9 +167,9 @@ public class Piece : MonoBehaviour
                 BoardManager.Instance.enPassentPiece = null;
                 if (BoardManager.Instance.enPassantIndex != -1)
                 {
-                    if (Utility.IsPiece(Board.square[BoardManager.Instance.enPassantIndex], EnPassant))
+                    if (Utility.IsPiece(boardPosition[BoardManager.Instance.enPassantIndex], EnPassant))
                     {
-                        Board.square[BoardManager.Instance.enPassantIndex] = None;
+                        boardPosition[BoardManager.Instance.enPassantIndex] = None;
                     }
                     BoardManager.Instance.enPassantIndex = -1;
                 }
@@ -180,7 +181,7 @@ public class Piece : MonoBehaviour
         if (!IsPiece(Pawn) || !doEnPassant)
         {
             if (doPrint)
-                Board.PrintBoard(Board.square);
+                Board.PrintBoard(boardPosition);
             return playSound;
         }
         // if the move was a double square move
@@ -193,7 +194,7 @@ public class Piece : MonoBehaviour
                 BoardManager.Instance.enPassantIndex,
                 epCode
             );
-            Board.square[BoardManager.Instance.enPassantIndex] = epCode;
+            boardPosition[BoardManager.Instance.enPassantIndex] = epCode;
             BoardManager.Instance.enPassentPiece.name = "En Passent";
             Board.pieceObjs.Add(BoardManager.Instance.enPassentPiece);
         }
@@ -203,7 +204,7 @@ public class Piece : MonoBehaviour
             BoardManager.Instance.DisplayButtons();
         }
         if (doPrint)
-            Board.PrintBoard(Board.square);
+            Board.PrintBoard(boardPosition);
         return playSound;
     }
 
@@ -240,14 +241,12 @@ public class Piece : MonoBehaviour
     /// <param name="enemyIndex">The board index of the piece to be captured</param>
     /// <param name="x">The x position in Unity world space to move to after the opponent has been captured</param>
     /// <param name="y">The y position in Unity world space to move to after the opponent has been captured</param>
-    private void Capture(GameObject enemyObj, int enemyIndex, float x, float y)
+    public void Capture(GameObject enemyObj, int enemyIndex, float x, float y, byte[] boardPositon)
     {
         if (Utility.IsValidIndex(enemyIndex))
-            Board.square[enemyIndex] = None;
+            boardPositon[enemyIndex] = None;
         Board.halfmoveClock = 0;
-        Move(x, y, true, true, prevX, prevY, true, false);
-        Board.ChangeTurn();
-        Board.UpdateMaterial();
+        Move(x, y, true, true, prevX, prevY, true, false, boardPositon);
         Board.pieceObjs.Remove(enemyObj);
         Destroy(enemyObj);
         int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
@@ -293,7 +292,7 @@ public class Piece : MonoBehaviour
         // if the target square is the square the piece is on (didn't move)
         if (x == prevX && y == prevY)
         {
-            Move(x, y, false, true, prevX, prevY, true, false);
+            Move(x, y, false, true, prevX, prevY, true, false, Board.square);
             Board.UnRenderMoveDots();
             Board.RemoveHighlight();
             return;
@@ -316,18 +315,22 @@ public class Piece : MonoBehaviour
 
         if (!Utility.IsNonePiece(targetSquareCode)) // if it's a capture
         { 
-            Capture(Utility.PieceObjectAtWorldPos(x, y), -1, x, y);
+            Capture(Utility.PieceObjectAtWorldPos(x, y), -1, x, y, Board.square);
+            Board.ChangeTurn();
+            Board.UpdateMaterial();
         }
         else if (Utility.IsPiece(targetSquareCode, EnPassant) && IsPiece(Pawn))
         {
             // if it's an En Passant capture
             float enemyY = (colour == Colour.Black) ? y + 1 : y - 1;
             int targetIndex = Utility.WorldPosToBoardIndex(x, enemyY);
-            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetIndex, x, y);
+            Capture(Utility.PieceObjectAtWorldPos(x, enemyY), targetIndex, x, y, Board.square);
+            Board.ChangeTurn();
+            Board.UpdateMaterial();
         }
         else
         {
-            bool playSounds = Move(x, y, true, true, prevX, prevY, true, false);
+            bool playSounds = Move(x, y, true, true, prevX, prevY, true, false, Board.square);
             Board.ChangeTurn();
             int enemyKingIndex = (colour == Colour.White) ? Board.blackKingIndex : Board.whiteKingIndex;
             Colour enemyColour = (colour == Colour.White) ? Colour.Black : Colour.White;
