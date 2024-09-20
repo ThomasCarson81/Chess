@@ -63,6 +63,7 @@ public class BoardManager : MonoBehaviour
     public Piece promotingPiece = null;
     public static bool botMode = false;
     public int enPassantIndex = -1;
+    public float botMoveStart = 0;
 
     public static string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static string startFEN = defaultFEN;
@@ -83,6 +84,14 @@ public class BoardManager : MonoBehaviour
             Instance = this;
         }
         StartGame();
+    }
+
+    private void Update()
+    {
+        if (botMode && Time.time > botMoveStart + 0.4 && Board.turn == Colour.Black)
+        {
+            Board.BotMove();
+        }
     }
 
     public void GetFEN()

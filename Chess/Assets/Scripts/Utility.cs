@@ -172,8 +172,8 @@ public static class Utility
     /// <summary>
     /// Check if a piece code is a certain piece
     /// </summary>
-    /// <param name="pieceCode">The piece code to be checked</param>
-    /// <param name="questionCode">The code of the piece to be checked for</param>
+    /// <param name="pieceCode">The piece on the board code to be checked</param>
+    /// <param name="questionCode">The Piece.cs code to check for</param>
     /// <returns>True if the piece is a match, otherwise false</returns>
     public static bool IsPiece(byte pieceCode, byte questionCode)
     {

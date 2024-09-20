@@ -357,9 +357,9 @@ public sealed class Board
         BoardManager.Instance.moveText.text = $"Move:\n{fullmoveNumber}";
         if (BoardManager.botMode && turn == Colour.Black)
         {
-            BotMove();
+            BoardManager.Instance.botMoveStart = Time.time;
         }
-        EvalPosition(square);
+        UpdateMaterial();
     }
 
     /// <summary>
@@ -482,7 +482,6 @@ public sealed class Board
                 GameObject obj = Utility.PieceObjectAtWorldPos(pos.x, pos.y);
                 if (obj == null)
                 {
-                    Debug.Log($"stalemate check: no piece at ({pos.x},{pos.y})");
                     return false;
                 }
                 if (pos == null)
@@ -544,14 +543,20 @@ public sealed class Board
                         intMoves.AddRange(MoveSets.CalculateKingMoves(i, Colour.Black, Utility.HasMoved(square[i])));
                         break;
                 }
-                foreach (int intMove in intMoves)
+                List<int> intMovesPostFilter = new();
+                foreach (int move in intMoves)
+                {
+                    if (MoveSets.ProtectsCheck(i, move, Colour.Black))
+                        intMovesPostFilter.Add(move);
+                }
+
+                foreach (int intMove in intMovesPostFilter)
                 {
                     byte[] theoryPos = (byte[])square.Clone();
                     theoryPos[intMove] = theoryPos[i];
                     theoryPos[i] = Piece.None;
                     int rating = EvalPosition(theoryPos);
                     structMoves.Add(new Move(i, intMove, rating));
-                    Debug.Log($"new move: {i}-{intMove}: {rating}");
                 }
             }
         }
@@ -563,24 +568,38 @@ public sealed class Board
                 bestMove = j;
             }
         }
+        int oldPos = structMoves[bestMove].oldPos;
+        int newPos = structMoves[bestMove].newPos;
         //Debug.Log($"best move: {structMoves[bestMove].oldPos} to {structMoves[bestMove].newPos}, rating={structMoves[bestMove].rating}");
-        Vector3 oldPiecePos = Utility.BoardIndexToWorldPos(structMoves[bestMove].oldPos);
-        Vector3 newPiecePos = Utility.BoardIndexToWorldPos(structMoves[bestMove].newPos);
+        Vector3 oldPiecePos = Utility.BoardIndexToWorldPos(oldPos);
+        Vector3 newPiecePos = Utility.BoardIndexToWorldPos(newPos);
         GameObject botObj = Utility.PieceObjectAtWorldPos(oldPiecePos.x, oldPiecePos.y);
         if (botObj == null)
         {
             Debug.Log($"no piece at ({oldPiecePos.x},{oldPiecePos.y})");
         }
         Piece botPiece = botObj.GetComponent<Piece>();
-        if (square[structMoves[bestMove].newPos] == Piece.None)
+        bool playSound = false;
+        bool isEPTake = square[newPos] == Piece.EnPassant
+            && Utility.IsPiece(botPiece.pieceCode, Piece.Pawn);
+        if (isEPTake)
         {
-            botPiece.Move(newPiecePos.x, newPiecePos.y, true, false, oldPiecePos.x, oldPiecePos.y, true, false, square);
+            GameObject enemyObj = Utility.PieceObjectAtWorldPos(newPiecePos.x, newPiecePos.y);
+            int enemyIndex = newPos;
+            botPiece.Capture(enemyObj, enemyIndex, newPiecePos.x, newPiecePos.y, square);
         }
         else
         {
-            GameObject enemyObj = Utility.PieceObjectAtWorldPos(newPiecePos.x, newPiecePos.y);
-            int enemyIndex = structMoves[bestMove].newPos;
-            botPiece.Capture(enemyObj, enemyIndex, newPiecePos.x, newPiecePos.y, square);
+            if (square[newPos] == Piece.None)
+            {
+                playSound = botPiece.Move(newPiecePos.x, newPiecePos.y, true, false, oldPiecePos.x, oldPiecePos.y, true, false, square);
+            }
+            else
+            {
+                GameObject enemyObj = Utility.PieceObjectAtWorldPos(newPiecePos.x, newPiecePos.y);
+                int enemyIndex = newPos;
+                botPiece.Capture(enemyObj, enemyIndex, newPiecePos.x, newPiecePos.y, square);
+            }
         }
         if (CheckForMate(Colour.Black))
         {
@@ -596,6 +615,10 @@ public sealed class Board
         {
             Debug.Log("Draw due to insufficient material.");
             return;
+        }
+        if (playSound)
+        {
+            BoardManager.Instance.moveSound.Play();
         }
         ChangeTurn();
     }
@@ -694,7 +717,12 @@ public sealed class Board
         foreach (byte pc in boardPosition)
         {
             if (Utility.IsColour(pc, colour))
-                material += Utility.GetMaterial(pc);
+            {
+                if (!Utility.IsPiece(pc, Piece.EnPassant))
+                {
+                    material += Utility.GetMaterial(pc);
+                }
+            }
         }
         return material;
     }
