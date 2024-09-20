@@ -398,12 +398,12 @@ public static class Utility
     {
         int material = TypeCode(pieceCode) switch
         {
-            2 => 1, // Pawn
-            3 => 3, // Knight
-            4 => 3, // Bishop
-            5 => 5, // Rook
-            6 => 9, // Queen
-            7 => 1, // En Passent (pawn)
+            Piece.Pawn => 1,
+            Piece.Knight => 3,
+            Piece.Bishop => 3,
+            Piece.Rook => 5,
+            Piece.Queen => 9,
+            Piece.EnPassant => 1,
             _ => 0, // King or error
         };
         return material;

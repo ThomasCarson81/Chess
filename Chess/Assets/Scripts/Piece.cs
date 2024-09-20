@@ -201,7 +201,14 @@ public class Piece : MonoBehaviour
         else if (boardIndex > 55 ||  boardIndex < 8)
         {
             BoardManager.Instance.promotingPiece = this;
-            BoardManager.Instance.DisplayButtons();
+            if (BoardManager.botMode && Board.turn == Colour.Black)
+            {
+                BoardManager.Instance.OnChooseQueen();
+            }
+            else
+            {
+                BoardManager.Instance.DisplayButtons();
+            }
         }
         if (doPrint)
             Board.PrintBoard(boardPosition);
@@ -348,7 +355,6 @@ public class Piece : MonoBehaviour
                 }
             }
         }
-        
     }
     private void OnMouseUp()
     {

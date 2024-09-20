@@ -555,7 +555,7 @@ public sealed class Board
                     byte[] theoryPos = (byte[])square.Clone();
                     theoryPos[intMove] = theoryPos[i];
                     theoryPos[i] = Piece.None;
-                    int rating = EvalPosition(theoryPos);
+                    int rating = Evaluation.EvalBoard(theoryPos);
                     structMoves.Add(new Move(i, intMove, rating));
                 }
             }
@@ -621,13 +621,6 @@ public sealed class Board
             BoardManager.Instance.moveSound.Play();
         }
         ChangeTurn();
-    }
-
-    public static int EvalPosition(byte[] boardPosition)
-    {
-        // currently this method returns the result of GetMaterialDifference,
-        // therefore it is not a good way of evaluating a position.
-        return GetMaterialDifference(boardPosition);
     }
 
     /// <summary>
