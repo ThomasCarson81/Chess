@@ -601,6 +601,8 @@ public sealed class Board
                 botPiece.Capture(enemyObj, enemyIndex, newPiecePos.x, newPiecePos.y, square);
             }
         }
+        fullmoveNumber++;
+        BoardManager.Instance.moveText.text = $"Move:\n{fullmoveNumber}";
         if (CheckForMate(Colour.Black))
         {
             Debug.Log("Checkmate! White wins");

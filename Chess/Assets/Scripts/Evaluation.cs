@@ -12,84 +12,85 @@ public static class Evaluation
     
     #region EvalMaps
     public static readonly int[] PawnMap =
-    {    0,  0,  0,  0,  0,  0,  0,  0,
-         50, 50, 50, 50, 50, 50, 50, 50,
-         10, 10, 20, 30, 30, 20, 10, 10,
-         5,  5, 10, 25, 25, 10,  5,  5,
-         0,  0,  0, 20, 20,  0,  0,  0,
-         5, -5,-10,  0,  0,-10, -5,  5,
-         5, 10, 10,-20,-20, 10, 10,  5,
-         0,  0,  0,  0,  0,  0,  0,  0
+    {   
+        0,  0,  0,  0,  0,  0,  0,  0,
+        5, 10, 10,-20,-20, 10, 10,  5,
+        5, -5,-10,  0,  0,-10, -5,  5,
+        0,  0,  0, 20, 20,  0,  0,  0,
+        5,  5, 10, 25, 25, 10,  5,  5,
+        10, 10, 20, 30, 30, 20, 10, 10,
+        50, 50, 50, 50, 50, 50, 50, 50,
+        650, 650, 650, 650, 650, 650, 650, 650,
     };
     public static readonly int[] KnightMap = 
-    {   -50,-40,-30,-30,-30,-30,-40,-50,
-        -40,-20,  0,  0,  0,  0,-20,-40,
-        -30,  0, 10, 15, 15, 10,  0,-30,
-        -30,  5, 15, 20, 20, 15,  5,-30,
-        -30,  0, 15, 20, 20, 15,  0,-30,
-        -30,  5, 10, 15, 15, 10,  5,-30,
-        -40,-20,  0,  5,  5,  0,-20,-40,
+    {
         -50,-40,-30,-30,-30,-30,-40,-50,
+        -40,-20,  0,  5,  5,  0,-20,-40,
+        -30,  5, 10, 15, 15, 10,  5,-30,
+        -30,  0, 15, 20, 20, 15,  0,-30,
+        -30,  5, 15, 20, 20, 15,  5,-30,
+        -30,  0, 10, 15, 15, 10,  0,-30,
+        -40,-20,  0,  0,  0,  0,-20,-40,
+        -50,-40,-30,-30,-30,-30,-40,-50
     };
     public static readonly int[] BishopMap = 
-    {   -20,-10,-10,-10,-10,-10,-10,-20,
-        -10,  0,  0,  0,  0,  0,  0,-10,
-        -10,  0,  5, 10, 10,  5,  0,-10,
-        -10,  5,  5, 10, 10,  5,  5,-10,
-        -10,  0, 10, 10, 10, 10,  0,-10,
-        -10, 10, 10, 10, 10, 10, 10,-10,
-        -10,  5,  0,  0,  0,  0,  5,-10,
+    {
         -20,-10,-10,-10,-10,-10,-10,-20,
+        -10,  5,  0,  0,  0,  0,  5,-10,
+        -10, 10, 10, 10, 10, 10, 10,-10,
+        -10,  0, 10, 10, 10, 10,  0,-10,
+        -10,  5,  5, 10, 10,  5,  5,-10,
+        -10,  0,  5, 10, 10,  5,  0,-10,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -20,-10,-10,-10,-10,-10,-10,-20
     };
     public static readonly int[] RookMap =
-    {    0,  0,  0,  0,  0,  0,  0,  0,
+    {
+         0,  0,  0,  5,  5,  0,  0,  0,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
+        -5,  0,  0,  0,  0,  0,  0, -5,
          5, 10, 10, 10, 10, 10, 10,  5,
-        -5,  0,  0,  0,  0,  0,  0, -5,
-        -5,  0,  0,  0,  0,  0,  0, -5,
-        -5,  0,  0,  0,  0,  0,  0, -5,
-        -5,  0,  0,  0,  0,  0,  0, -5,
-        -5,  0,  0,  0,  0,  0,  0, -5,
-         0,  0,  0,  5,  5,  0,  0,  0
+         0,  0,  0,  0,  0,  0,  0,  0
     };
     public static readonly int[] QueenMap = 
-    {   -20,-10,-10, -5, -5,-10,-10,-20,
-        -10,  0,  0,  0,  0,  0,  0,-10,
-        -10,  0,  5,  5,  5,  5,  0,-10,
-         -5,  0,  5,  5,  5,  5,  0, -5,
-          0,  0,  5,  5,  5,  5,  0, -5,
-        -10,  5,  5,  5,  5,  5,  0,-10,
+    {
+        -20,-10,-10, -5, -5,-10,-10,-20,
         -10,  0,  5,  0,  0,  0,  0,-10,
+        -10,  5,  5,  5,  5,  5,  0,-10,
+          0,  0,  5,  5,  5,  5,  0, -5,
+         -5,  0,  5,  5,  5,  5,  0, -5,
+        -10,  0,  5,  5,  5,  5,  0,-10,
+        -10,  0,  0,  0,  0,  0,  0,-10,
         -20,-10,-10, -5, -5,-10,-10,-20
     };
     public static readonly int[] KingMidGameMap = 
-    {   -30,-40,-40,-50,-50,-40,-40,-30,
-        -30,-40,-40,-50,-50,-40,-40,-30,
-        -30,-40,-40,-50,-50,-40,-40,-30,
-        -30,-40,-40,-50,-50,-40,-40,-30,
-        -20,-30,-30,-40,-40,-30,-30,-20,
-        -10,-20,-20,-20,-20,-20,-20,-10,
-         20, 20,  0,  0,  0,  0, 20, 20,
-         20, 30, 10,  0,  0, 10, 30, 20
+    {
+        20, 30, 10,  0,  0, 10, 30, 20,
+        20, 20,  0,  0,  0,  0, 20, 20,
+       -10,-20,-20,-20,-20,-20,-20,-10,
+       -20,-30,-30,-40,-40,-30,-30,-20,
+       -30,-40,-40,-50,-50,-40,-40,-30,
+       -30,-40,-40,-50,-50,-40,-40,-30,
+       -30,-40,-40,-50,-50,-40,-40,-30,
+       -30,-40,-40,-50,-50,-40,-40,-30
     };
     public static readonly int[] KingEndGameMap =
-    {   -50,-40,-30,-20,-20,-30,-40,-50,
-        -30,-20,-10,  0,  0,-10,-20,-30,
-        -30,-10, 20, 30, 30, 20,-10,-30,
-        -30,-10, 30, 40, 40, 30,-10,-30,
-        -30,-10, 30, 40, 40, 30,-10,-30,
-        -30,-10, 20, 30, 30, 20,-10,-30,
+    {
+        -50,-30,-30,-30,-30,-30,-30,-50,
         -30,-30,  0,  0,  0,  0,-30,-30,
-        -50,-30,-30,-30,-30,-30,-30,-50
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-20,-10,  0,  0,-10,-20,-30,
+        -50,-40,-30,-20,-20,-30,-40,-50
     };
     #endregion
 
     #region PieceValues
-    //P = 100
-    //N = 320
-    //B = 330
-    //R = 500
-    //Q = 900
-    //K = 20000
     public static int pawnValue = 100;
     public static int knightValue = 320;
     public static int bishopValue = 330;
@@ -156,8 +157,9 @@ public static class Evaluation
         int eval = 0;
         for (int i = 0; i < boardPosition.Length; i++)
         {
-            if (Utility.IsNonePiece(boardPosition[i])) continue;
-            int[] map = (Utility.RemoveMetadata(boardPosition[i]) | Utility.ColourCode(boardPosition[i])) switch
+            byte piece = boardPosition[i];
+            if (Utility.IsNonePiece(piece)) continue;
+            int[] map = (Utility.RemoveMetadata(piece) | Utility.ColourCode(piece)) switch
             {
                 (Piece.Pawn | Piece.White) => PawnMap,
                 (Piece.Pawn | Piece.Black) => PawnMap.Reverse().ToArray(),
@@ -171,7 +173,7 @@ public static class Evaluation
             };
             if (IsEndgame(boardPosition))
             {
-                map = (Utility.RemoveMetadata(boardPosition[i]) | Utility.ColourCode(boardPosition[i])) switch
+                map = (Utility.RemoveMetadata(piece) | Utility.ColourCode(piece)) switch
                 {
                     (Piece.King | Piece.White) => KingEndGameMap,
                     (Piece.King | Piece.Black) =>KingEndGameMap.Reverse().ToArray(),
@@ -180,15 +182,16 @@ public static class Evaluation
             }
             else
             {
-                map = (Utility.RemoveMetadata(boardPosition[i]) | Utility.ColourCode(boardPosition[i])) switch
+                map = (Utility.RemoveMetadata(piece) | Utility.ColourCode(piece)) switch
                 {
                     (Piece.King | Piece.White) => KingMidGameMap,
                     (Piece.King | Piece.Black) => KingMidGameMap.Reverse().ToArray(),
                     _ => map
                 };
             }
-            int colourSign = (Utility.ColourCode(boardPosition[i]) == Piece.White) ? 1 : -1;
-            eval += (GetValue(boardPosition[i]) + map[i]) * colourSign;
+            int colourSign = (Utility.ColourCode(piece) == Piece.White) ? 1 : -1;
+            int contribution = (GetValue(piece) + map[i]) * colourSign;
+            eval += contribution;
         }
         return eval;
     }

@@ -177,6 +177,18 @@ public class Piece : MonoBehaviour
         }
         if (updateHasMoved)
             pieceCode |= HasMoved;
+        if (IsPiece(Pawn) && (boardIndex > 55 || boardIndex < 8))
+        {
+            BoardManager.Instance.promotingPiece = this;
+            if (BoardManager.botMode && Board.turn == Colour.Black)
+            {
+                BoardManager.Instance.OnChooseQueen();
+            }
+            else
+            {
+                BoardManager.Instance.DisplayButtons();
+            }
+        }
         // if this piece isn't a pawn or doEnPassant is false, none of the following code matters
         if (!IsPiece(Pawn) || !doEnPassant)
         {
@@ -197,18 +209,6 @@ public class Piece : MonoBehaviour
             boardPosition[BoardManager.Instance.enPassantIndex] = epCode;
             BoardManager.Instance.enPassentPiece.name = "En Passent";
             Board.pieceObjs.Add(BoardManager.Instance.enPassentPiece);
-        }
-        else if (boardIndex > 55 ||  boardIndex < 8)
-        {
-            BoardManager.Instance.promotingPiece = this;
-            if (BoardManager.botMode && Board.turn == Colour.Black)
-            {
-                BoardManager.Instance.OnChooseQueen();
-            }
-            else
-            {
-                BoardManager.Instance.DisplayButtons();
-            }
         }
         if (doPrint)
             Board.PrintBoard(boardPosition);
@@ -285,7 +285,7 @@ public class Piece : MonoBehaviour
     private void OnMouseDown()
     {
         lastClickTime = Time.time;
-        if (Board.turn != colour || !Board.canClick) // it's not your turn, or someone is promoting
+        if (Board.turn != colour || !Board.canClick || (Board.turn == Colour.Black && BoardManager.botMode)) // it's not your turn, or someone is promoting
             return;
         if (!IsPickedUp())
         {
@@ -304,14 +304,17 @@ public class Piece : MonoBehaviour
             Board.RemoveHighlight();
             return;
         }
-        if (IsColour(Black))
-            Board.fullmoveNumber++;
         if (IsPiece(Pawn))
             Board.halfmoveClock = 0;
         else
             Board.halfmoveClock++; // will be set to 0 later if this move is a capture
         if (!legalMoves.Contains(Utility.WorldPosToBoardIndex(x, y)))
             return; // Illegal move
+        if (IsColour(Black))
+        {
+            Board.fullmoveNumber++;
+            BoardManager.Instance.moveText.text = $"Move:\n{Board.fullmoveNumber}";
+        }
         Board.UnRenderMoveDots();
         Board.RemoveHighlight();
         byte targetSquareCode = Utility.PieceCodeAtWorldPos(x, y);

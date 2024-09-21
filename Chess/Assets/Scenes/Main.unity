@@ -1998,6 +1998,8 @@ MonoBehaviour:
   piecePrefab: {fileID: 4415624333441761004, guid: 2cdbd2113c2f94f4aa85b3db78864e54, type: 3}
   moveDotPrefab: {fileID: 8943478088053170893, guid: a712eb150ca87524cba0b8f435710c78, type: 3}
   highlightPrefab: {fileID: 3180074700919227349, guid: 88637f040a0d0d24a91d42703c1f7bf4, type: 3}
+  enPassentPiece: {fileID: 0}
+  highlight: {fileID: 0}
   queenButton: {fileID: 544098705}
   knightButton: {fileID: 2026418014}
   rookButton: {fileID: 1788867666}
@@ -2036,9 +2038,6 @@ MonoBehaviour:
   moveText: {fileID: 1802661995}
   botText: {fileID: 1303982095}
   playerText: {fileID: 1623268324}
-  enPassentPiece: {fileID: 0}
-  highlight: {fileID: 0}
-  enPassantIndex: -1
   moveSound: {fileID: 1221999591}
   captureSound: {fileID: 1221999590}
   checkSound: {fileID: 1221999594}
@@ -2047,6 +2046,8 @@ MonoBehaviour:
   gameEndSound: {fileID: 1221999595}
   chosenPiece: 0
   promotingPiece: {fileID: 0}
+  enPassantIndex: -1
+  botMoveStart: 0
 --- !u!82 &1221999590
 AudioSource:
   m_ObjectHideFlags: 0

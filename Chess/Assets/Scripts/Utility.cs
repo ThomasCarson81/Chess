@@ -302,7 +302,7 @@ public static class Utility
         };
         if ((file == 0 && x != -3.5f) || (rank == 0 && y != -3.5f))
         {
-            Debug.LogError("Inapplicable coordinates provided to WorldPosToBoardIndex()");
+            Debug.LogError($"Invalid coordinates provided to WorldPosToBoardIndex(): ({x},{y})");
             return -1;
         }
         return file + 8 * rank;
