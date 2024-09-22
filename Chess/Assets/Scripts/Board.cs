@@ -554,6 +554,7 @@ public sealed class Board
                 {
                     byte[] theoryPos = (byte[])square.Clone();
                     theoryPos[intMove] = theoryPos[i];
+                    theoryPos[intMove] |= Piece.HasMoved;
                     theoryPos[i] = Piece.None;
                     int rating = Evaluation.EvalBoard(theoryPos);
                     structMoves.Add(new Move(i, intMove, rating));

@@ -76,7 +76,7 @@ public static class MoveSets
         if (Utility.IsValidIndex(index1Forward))
         {
             newPos = Utility.BoardIndexToWorldPos(index1Forward);
-            if (Mathf.Abs(newPos.x - currPos.x) == 0)
+            if (newPos.x == currPos.x )
             {
                 byte piece1Forward = Board.square[index1Forward];
                 if (!Utility.IsNonePiece(piece1Forward))
@@ -90,7 +90,7 @@ public static class MoveSets
         if (Utility.IsValidIndex(index2Forward))
         {
             newPos = Utility.BoardIndexToWorldPos(index2Forward);
-            if (Mathf.Abs(newPos.x - currPos.x) == 0)
+            if (newPos.x == currPos.x)
             {
                 byte piece2Forward = Board.square[index2Forward];
                 if (Utility.IsNonePiece(piece2Forward))
@@ -144,7 +144,8 @@ public static class MoveSets
         List<int> result = new();
         if (!hasMoved && !IsAttacked(currentIndex, colour))
         {
-            if (Board.square[currentIndex + 1] == Piece.None &&
+            if (currentIndex + 3 < Board.square.Length && 
+                Board.square[currentIndex + 1] == Piece.None &&
                 !IsAttacked(currentIndex + 1, colour) &&
                 Board.square[currentIndex + 2] == Piece.None &&
                 !IsAttacked(currentIndex + 2, colour) &&
@@ -154,7 +155,8 @@ public static class MoveSets
                 // short castle possible
                 result.Add(currentIndex + 2);
             }
-            if (Board.square[currentIndex - 1] == Piece.None &&
+            if (currentIndex - 3 > 0 &&
+                Board.square[currentIndex - 1] == Piece.None &&
                 !IsAttacked(currentIndex - 1, colour) &&
                 Board.square[currentIndex - 2] == Piece.None &&
                 !IsAttacked(currentIndex - 2, colour) &&
