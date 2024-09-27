@@ -360,6 +360,7 @@ public sealed class Board
             BoardManager.Instance.botMoveStart = Time.time;
         }
         UpdateMaterial();
+        Debug.Log($"eval: {Evaluation.EvalBoard(square)}");
     }
 
     /// <summary>
@@ -463,7 +464,7 @@ public sealed class Board
     public static bool CheckForMate(Colour colour)
     {
         // Insufficient Material
-        if (CheckForInsufficientMaterial())
+        if (CheckForInsufficientMaterial(square))
         {
             BoardManager.Instance.Draw(DrawCause.InsufficientMaterial);
             return true;
@@ -515,63 +516,25 @@ public sealed class Board
 
     public static void BotMove()
     {
-        List<Move> structMoves = new();
-
-        for (int i = 0; i < square.Length; i++)
+        List<Move> moves = Bot.AllMoves(Colour.Black, square);
+        for (int i = 0; i < moves.Count; i++)
         {
-            if (Utility.IsColour(square[i], Colour.Black))
-            {
-                List<int> intMoves = new();
-                switch (Utility.TypeCode(square[i]))
-                {
-                    case Piece.Pawn:
-                        intMoves.AddRange(MoveSets.CalculatePawnMoves(i, Colour.Black, Utility.HasMoved(square[i])));
-                        break;
-                    case Piece.Rook:
-                        intMoves.AddRange(MoveSets.CalculateRookMoves(i, Colour.Black));
-                        break;
-                    case Piece.Knight:
-                        intMoves.AddRange(MoveSets.CalculateKnightMoves(i, Colour.Black));
-                        break;
-                    case Piece.Bishop:
-                        intMoves.AddRange(MoveSets.CalculateBishopMoves(i, Colour.Black));
-                        break;
-                    case Piece.Queen:
-                        intMoves.AddRange(MoveSets.CalculateQueenMoves(i, Colour.Black));
-                        break;
-                    case Piece.King:
-                        intMoves.AddRange(MoveSets.CalculateKingMoves(i, Colour.Black, Utility.HasMoved(square[i])));
-                        break;
-                }
-                List<int> intMovesPostFilter = new();
-                foreach (int move in intMoves)
-                {
-                    if (MoveSets.ProtectsCheck(i, move, Colour.Black))
-                        intMovesPostFilter.Add(move);
-                }
-
-                foreach (int intMove in intMovesPostFilter)
-                {
-                    byte[] theoryPos = (byte[])square.Clone();
-                    theoryPos[intMove] = theoryPos[i];
-                    theoryPos[intMove] |= Piece.HasMoved;
-                    theoryPos[i] = Piece.None;
-                    int rating = Evaluation.EvalBoard(theoryPos);
-                    structMoves.Add(new Move(i, intMove, rating));
-                }
-            }
+            byte[] theoryPos = (byte[])square.Clone();
+            Bot.MakeTheoryMove(theoryPos, moves[i]);
+            int rating = Bot.RateBoardNormalised(theoryPos, Colour.Black, 3, 0, 0);
+            moves[i] = new Move(moves[i].GetOldPos(), moves[i].GetNewPos(), rating);
         }
-        int bestMove = 0;
-        for (int j = 0; j < structMoves.Count; j++)
-        {
-            if (structMoves[j].rating < structMoves[bestMove].rating)
-            {
-                bestMove = j;
-            }
-        }
-        int oldPos = structMoves[bestMove].oldPos;
-        int newPos = structMoves[bestMove].newPos;
-        //Debug.Log($"best move: {structMoves[bestMove].oldPos} to {structMoves[bestMove].newPos}, rating={structMoves[bestMove].rating}");
+        //foreach (Move mv in moves)
+        //{
+        //    Debug.Log($"{mv.GetOldPos()} to {mv.GetNewPos()} = {mv.GetRating()}");
+        //}
+        Move bestMove = Bot.BestMove(moves, Colour.Black); // chooses move with lowest eval (good for black)
+        byte[] nextPos = (byte[])square.Clone();
+        Bot.MakeTheoryMove(nextPos, bestMove);
+        //Evaluation.EvalBoard(nextPos, true);
+        int oldPos = bestMove.GetOldPos();
+        int newPos = bestMove.GetNewPos();
+        Debug.Log($"best move: {bestMove.GetOldPos()} to {bestMove.GetNewPos()}, rating={bestMove.GetRating()}");
         Vector3 oldPiecePos = Utility.BoardIndexToWorldPos(oldPos);
         Vector3 newPiecePos = Utility.BoardIndexToWorldPos(newPos);
         GameObject botObj = Utility.PieceObjectAtWorldPos(oldPiecePos.x, oldPiecePos.y);
@@ -614,7 +577,7 @@ public sealed class Board
             Debug.Log("Checkmate! Black wins");
             return;
         }
-        if (CheckForInsufficientMaterial())
+        if (CheckForInsufficientMaterial(square))
         {
             Debug.Log("Draw due to insufficient material.");
             return;
@@ -630,13 +593,13 @@ public sealed class Board
     /// Check if the game should end due to insufficient material
     /// </summary>
     /// <returns>True if the game should end, otherwise false</returns>
-    static bool CheckForInsufficientMaterial()
+    static bool CheckForInsufficientMaterial(byte[] boardPosition)
     {
         int whiteKnights = 0;
         int blackKnights = 0;
         int whiteBishops = 0;
         int blackBishops = 0;
-        foreach (byte piece in square)
+        foreach (byte piece in boardPosition)
         {
             if (Utility.IsNonePiece(piece)) continue;
             switch (Utility.TypeCode(piece))
@@ -691,8 +654,8 @@ public sealed class Board
                 return true;
             if (whiteBishops == 1 && blackBishops == 1)
             {
-                int whiteBishopIndex = FindPiece(Piece.Bishop | Piece.White, square);
-                int blackBishopIndex = FindPiece(Piece.Bishop | Piece.Black, square);
+                int whiteBishopIndex = FindPiece(Piece.Bishop | Piece.White, boardPosition);
+                int blackBishopIndex = FindPiece(Piece.Bishop | Piece.Black, boardPosition);
                 // if the index of the square and
                 // the index of the square integer divided by 8 are both even or both odd,
                 // the square is dark, otherwise it is light
@@ -735,19 +698,25 @@ public enum Colour
 }
 public struct Move
 {
-    public int oldPos;
-    public int newPos;
-    public int rating;
+    public int OldPos;
+    public int NewPos;
+    public int Rating;
     public Move(int oldPos, int newPos)
     {
-        this.oldPos = oldPos;
-        this.newPos = newPos;
-        rating = 0;
+        OldPos = oldPos;
+        NewPos = newPos;
+        Rating = 0;
     }
     public Move(int oldPos, int newPos, int rating)
     {
-        this.oldPos = oldPos;
-        this.newPos = newPos;
-        this.rating = rating;
+        OldPos = oldPos;
+        NewPos = newPos;
+        Rating = rating;
     }
+    public void SetRating(int rating) { Rating = rating; }
+    public void SetOldPos(int oldPos) { OldPos = oldPos; }
+    public void SetNewPos(int newPos) { NewPos = newPos; }
+    public readonly int GetOldPos() { return OldPos; }
+    public readonly int GetNewPos() { return NewPos; }
+    public readonly int GetRating() { return Rating; }
 }

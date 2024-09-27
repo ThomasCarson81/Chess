@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public static class MoveSets
 {
     public static readonly int[] King = { 7, 8, 9, -1, 1, -9, -8, -7 };

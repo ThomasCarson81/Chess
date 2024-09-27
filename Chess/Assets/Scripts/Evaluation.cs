@@ -152,7 +152,7 @@ public static class Evaluation
         return false;
     }
 
-    public static int EvalBoard(byte[] boardPosition)
+    public static int EvalBoard(byte[] boardPosition, bool printContribution=false)
     {
         int eval = 0;
         for (int i = 0; i < boardPosition.Length; i++)
@@ -191,6 +191,10 @@ public static class Evaluation
             }
             int colourSign = (Utility.ColourCode(piece) == Piece.White) ? 1 : -1;
             int contribution = (GetValue(piece) + map[i]) * colourSign;
+            if (printContribution)
+            {
+                Debug.Log($"{i}: {contribution}");
+            }
             eval += contribution;
         }
         return eval;
